@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+# generated synthetic data (regenerate via data/generate_synthetic.py)
+data/synthetic/
+
+# model checkpoints and run outputs
+outputs/

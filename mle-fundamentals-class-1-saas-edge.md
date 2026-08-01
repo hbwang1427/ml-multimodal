@@ -1,13 +1,16 @@
 # Machine Learning Engineer Fundamentals
-## Class 1 (Adapted): MLE Role & Industry Landscape — with SaaS MLE & Edge AI MLE Deep Dives
+## Class 1 (Adapted): MLE Internship Prep — SaaS MLE & Edge AI MLE Deep Dives
 
-> **Adapted for `ml-multimodal`.** This is the Class 1 "MLE Overview in Industry"
-> notes, extended with two specialized tracks that this repo's work touches
-> directly: **SaaS MLE** (shipping the CLIP-style retrieval model here as a
-> multi-tenant API/product) and **Edge AI MLE** (running the frozen-backbone +
-> projection-head model on-device instead of behind an API). The original
-> CV/perception and depth-estimation material is kept intact since it's still
-> the throughline example; the two new tracks are layered on top of it.
+> **Adapted for `ml-multimodal`, targeted at MLE internship prep.** This is the
+> Class 1 "MLE Overview in Industry" notes, retargeted around two specialized
+> tracks that this repo's work touches directly: **SaaS MLE** (shipping the
+> CLIP-style retrieval model here as a multi-tenant API/product) and
+> **Edge AI MLE** (running the frozen-backbone + projection-head model
+> on-device instead of behind an API). The generic interview-prep material
+> has been removed in favor of a real internship-market trends section
+> (Section 11), and the course project (Section 7) now targets a mini
+> vision-language retrieval model deployed both ways: as a SaaS API and as
+> a visual-reasoning step for a robot.
 
 ---
 
@@ -17,12 +20,12 @@
 3. [Role Comparisons](#3-role-comparisons-mle-vs-data-scientist-vs-ai-engineer-vs-data-engineer)
 4. [Agile Process in ML](#4-agile-process-in-ml)
 5. [Model Training & Deployment](#5-model-training--deployment)
-6. [Industry Interview Guide](#6-industry-interview-guide)
-7. [Latest Trends](#7-latest-trends-2024-2025)
-8. [Course Project Preview: Monocular Depth Estimation](#8-course-project-preview-monocular-depth-estimation)
-9. [Course Discussion](#9-course-discussion)
-10. [SaaS MLE Deep Dive](#10-saas-mle-deep-dive)
-11. [Edge AI MLE Deep Dive](#11-edge-ai-mle-deep-dive)
+6. [Latest Trends](#6-latest-trends-2024-2025)
+7. [Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment](#7-course-project-preview-mini-vision-language-retrieval-model--saas--robotics-deployment)
+8. [Course Discussion](#8-course-discussion)
+9. [SaaS MLE Deep Dive](#9-saas-mle-deep-dive)
+10. [Edge AI MLE Deep Dive](#10-edge-ai-mle-deep-dive)
+11. [MLE Internship Market: 2025-2026 Trends & Openings](#11-mle-internship-market-2025-2026-trends--openings)
 
 ---
 
@@ -1207,278 +1210,7 @@ ALERTING THRESHOLDS
 
 ---
 
-## 6. Industry Interview Guide
-
-### MLE Interview Structure
-
-```
-Typical MLE Interview Process
-═══════════════════════════════════════════════════════════════════════════
-
- STAGE 1         STAGE 2         STAGE 3         STAGE 4         STAGE 5
- ───────         ───────         ───────         ───────         ───────
-┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-│Recruiter│───▶│ Phone   │───▶│Technical│───▶│ Onsite  │───▶│  Offer  │
-│ Screen  │    │ Screen  │    │  Phone  │    │  Loop   │    │  Stage  │
-│ (30min) │    │ (45min) │    │ (60min) │    │ (4-6hr) │    │         │
-└─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘
-     │              │              │              │
-     ▼              ▼              ▼              ▼
-  Resume        Basic ML      Coding +      Full-day with:
-  Background    Concepts      ML System     • ML Design
-  Experience    Coding        Design        • Coding (x2)
-  Motivation    Experience                  • System Design
-                                           • Behavioral
-```
-
-### Interview Types & Preparation
-
-#### 1. Coding Interview
-
-```
-CODING INTERVIEW TOPICS
-═══════════════════════════════════════════════════════════════
-
-Data Structures & Algorithms
-├── Arrays & Strings
-├── Hash Tables
-├── Trees & Graphs
-├── Dynamic Programming
-├── Sorting & Searching
-└── Common patterns (sliding window, two pointers, etc.)
-
-ML-Specific Coding
-├── Implement gradient descent
-├── Build a decision tree from scratch
-├── K-means clustering implementation
-├── Cross-validation implementation
-├── Feature preprocessing pipeline
-└── Custom loss functions
-
-Python Proficiency
-├── NumPy/Pandas operations
-├── Data manipulation
-├── Object-oriented design
-├── Generators & decorators
-└── Type hints & testing
-
-EXAMPLE QUESTION:
-─────────────────
-"Implement a function to compute the k-nearest neighbors
-for a given query point, optimizing for both accuracy
-and efficiency."
-```
-
-#### 2. ML System Design Interview
-
-```
-ML SYSTEM DESIGN FRAMEWORK
-═══════════════════════════════════════════════════════════════
-
-┌──────────────────────────────────────────────────────────────┐
-│               ML SYSTEM DESIGN TEMPLATE                      │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  STEP 1: CLARIFY REQUIREMENTS (5 min)                        │
-│  ─────────────────────────────────────                       │
-│  • What is the business goal?                                │
-│  • What are the success metrics?                             │
-│  • What are the constraints (latency, scale, cost)?          │
-│  • What data is available?                                   │
-│                                                              │
-│  STEP 2: HIGH-LEVEL DESIGN (10 min)                          │
-│  ─────────────────────────────────────                       │
-│  • Frame the ML problem                                      │
-│  • Define input/output                                       │
-│  • Propose baseline approach                                 │
-│  • Draw system architecture                                  │
-│                                                              │
-│  STEP 3: DATA PIPELINE (10 min)                              │
-│  ─────────────────────────────────────                       │
-│  • Data sources & collection                                 │
-│  • Feature engineering                                       │
-│  • Data validation & quality                                 │
-│  • Training/serving data consistency                         │
-│                                                              │
-│  STEP 4: MODEL DEVELOPMENT (10 min)                          │
-│  ─────────────────────────────────────                       │
-│  • Model selection rationale                                 │
-│  • Training pipeline                                         │
-│  • Evaluation strategy                                       │
-│  • Offline/online metrics                                    │
-│                                                              │
-│  STEP 5: SERVING & DEPLOYMENT (10 min)                       │
-│  ─────────────────────────────────────                       │
-│  • Inference architecture                                    │
-│  • Scaling strategy                                          │
-│  • A/B testing plan                                          │
-│  • Monitoring & alerting                                     │
-│                                                              │
-│  STEP 6: DEEP DIVE & TRADE-OFFS (5 min)                      │
-│  ─────────────────────────────────────                       │
-│  • Discuss alternatives                                      │
-│  • Handle edge cases                                         │
-│  • Address interviewer questions                             │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-
-COMMON ML SYSTEM DESIGN QUESTIONS:
-──────────────────────────────────────────────────────────────
-• Design a recommendation system (Netflix, Spotify, Amazon)
-• Design a search ranking system (Google, LinkedIn)
-• Design a fraud detection system
-• Design a content moderation system
-• Design a real-time bidding system
-• Design a chatbot / conversational AI system
-• Design a personalized news feed
-• Design an ML-powered autocomplete
-```
-
-#### 3. ML Theory Interview
-
-```
-ML THEORY TOPICS
-═══════════════════════════════════════════════════════════════
-
-FUNDAMENTALS
-├── Bias-Variance Tradeoff
-├── Overfitting & Regularization (L1, L2, Dropout)
-├── Cross-Validation strategies
-├── Feature Selection methods
-└── Evaluation Metrics (when to use what)
-
-CLASSICAL ML
-├── Linear/Logistic Regression
-├── Decision Trees & Ensemble Methods (RF, GBM, XGBoost)
-├── SVM & Kernel methods
-├── Clustering (K-means, DBSCAN, Hierarchical)
-└── Dimensionality Reduction (PCA, t-SNE, UMAP)
-
-DEEP LEARNING
-├── Neural Network fundamentals
-├── Backpropagation & optimization (SGD, Adam, etc.)
-├── CNN architectures
-├── RNN, LSTM, Transformers
-├── Attention mechanisms
-└── Transfer Learning & Fine-tuning
-
-NLP / LLM
-├── Word embeddings (Word2Vec, GloVe)
-├── Transformer architecture (BERT, GPT)
-├── Fine-tuning strategies (LoRA, QLoRA)
-├── Prompt engineering
-└── RAG (Retrieval Augmented Generation)
-
-ADVANCED TOPICS
-├── Recommendation Systems
-├── Reinforcement Learning basics
-├── Distributed Training
-├── Model Compression (Quantization, Pruning, Distillation)
-└── Fairness & Bias in ML
-```
-
-#### 4. Behavioral Interview
-
-```
-BEHAVIORAL INTERVIEW PREPARATION
-═══════════════════════════════════════════════════════════════
-
-USE THE STAR METHOD:
-┌─────────────┬───────────────────────────────────────────────┐
-│ S-ituation  │ Set the context for your story               │
-│ T-ask       │ Describe your responsibility                  │
-│ A-ction     │ Explain what steps you took                   │
-│ R-esult     │ Share the outcome (with metrics if possible) │
-└─────────────┴───────────────────────────────────────────────┘
-
-COMMON QUESTIONS:
-─────────────────
-• Tell me about a challenging ML project you worked on
-• Describe a time when a model didn't perform as expected
-• How do you handle disagreements with stakeholders?
-• Tell me about a time you had to learn a new technology quickly
-• Describe a situation where you had to balance speed vs quality
-• How do you prioritize when you have multiple competing projects?
-
-PREPARE STORIES FOR:
-────────────────────
-• Technical challenge / debugging
-• Cross-team collaboration
-• Dealing with ambiguity
-• Project failure and learnings
-• Leadership / mentorship
-• Influence without authority
-```
-
-### Interview Preparation Timeline
-
-```
-12-WEEK INTERVIEW PREP PLAN
-═══════════════════════════════════════════════════════════════
-
-WEEKS 1-4: FOUNDATIONS
-──────────────────────
-├── Data Structures & Algorithms (daily practice)
-├── Python proficiency
-├── Review ML fundamentals
-└── Start system design study
-
-WEEKS 5-8: DEEP DIVE
-──────────────────────
-├── ML system design practice
-├── Mock interviews (coding)
-├── Deep learning review
-├── Behavioral story preparation
-
-WEEKS 9-12: INTERVIEW MODE
-──────────────────────
-├── Full mock interview loops
-├── Company-specific preparation
-├── System design mock sessions
-├── Behavioral practice
-
-DAILY SCHEDULE (during prep):
-─────────────────────────────
-• 1 hour: Coding practice (LeetCode/HackerRank)
-• 30 min: ML concepts review
-• 30 min: System design reading/practice
-• 20 min: Behavioral story refinement
-```
-
-### Resources
-
-```
-RECOMMENDED RESOURCES
-═══════════════════════════════════════════════════════════════
-
-CODING PRACTICE
-├── LeetCode (focus on Medium difficulty)
-├── HackerRank ML challenges
-├── NeetCode roadmap
-└── "Cracking the Coding Interview" book
-
-ML SYSTEM DESIGN
-├── "Designing Machine Learning Systems" (Chip Huyen)
-├── "Machine Learning System Design Interview" (Alex Xu)
-├── Stanford CS329S course materials
-└── Tech blogs (Netflix, Uber, Airbnb engineering)
-
-ML THEORY
-├── "Hands-On Machine Learning" (Géron)
-├── Andrew Ng's ML/DL courses (Coursera)
-├── Fast.ai courses
-└── Papers with Code
-
-BEHAVIORAL
-├── "The STAR Method" resources
-├── Glassdoor interview experiences
-├── Levels.fyi compensation data
-└── Blind (anonymous tech forum)
-```
-
----
-
-## 7. Latest Trends (2024-2025)
+## 6. Latest Trends (2024-2025)
 
 ### The Computer Vision & Multimodal AI Landscape
 
@@ -1997,31 +1729,37 @@ DOMAIN SPECIFIC
 
 ---
 
-## 8. Course Project Preview: Monocular Depth Estimation
+## 7. Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment
 
-### Why Depth Estimation?
+### Why a Vision-Language Retrieval Model?
 
-Depth estimation is a fundamental computer vision task that enables machines to understand the 3D structure of a scene from 2D images. This project will give you hands-on experience with the complete ML engineering lifecycle.
+This project builds a small CLIP-style dual-encoder retrieval model —
+exactly the architecture in this repo (`ml-multimodal`): frozen vision and
+text foundation models with only lightweight trainable projection heads,
+aligned via contrastive (InfoNCE) loss. It's cheap enough to train on
+modest compute, yet the resulting embedding space is directly useful in
+two very different production contexts: as a hosted retrieval API, and as
+an on-device perception component for a robot.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                  WHY MONOCULAR DEPTH ESTIMATION?                            │
+│           WHY A MINI VISION-LANGUAGE RETRIEVAL MODEL?                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  INDUSTRY RELEVANCE                    │  LEARNING VALUE                   │
 │  ──────────────────                    │  ──────────────                   │
-│  • AR/VR: Occlusion, 3D effects        │  • End-to-end ML pipeline         │
-│  • Autonomous driving: Obstacle dist.  │  • Model training & evaluation    │
-│  • Robotics: Navigation, manipulation  │  • Production deployment          │
-│  • Mobile: Portrait mode, 3D photos    │  • Optimization techniques        │
-│  • Drones: Obstacle avoidance          │  • Real-time inference            │
+│  • Semantic search / image retrieval   │  • End-to-end ML pipeline         │
+│  • Content moderation & tagging        │  • Contrastive training           │
+│  • Robotics: "find the red mug" queries│  • Production deployment (2 paths)│
+│  • RAG over image/document corpora     │  • Multi-tenant SaaS API design   │
+│  • Recommendation & de-duplication     │  • Edge/on-device inference       │
 │                                                                             │
-│  CONNECTS TO TRENDS                    │  CAREER IMPACT                    │
-│  ──────────────────                    │  ─────────────                    │
-│  • Foundation models (Depth Anything)  │  • Portfolio project              │
-│  • Multimodal (depth + RGB + text)     │  • Interview talking point        │
-│  • Edge deployment (mobile/embedded)   │  • Industry-ready skills          │
-│  • 3D vision & world models            │  • End-to-end ownership           │
+│  CONNECTS TO TRENDS                    │  INTERNSHIP RELEVANCE             │
+│  ──────────────────                    │  ─────────────────                │
+│  • Frozen-backbone + light-head fusion │  • Directly maps to SaaS MLE and  │
+│    (CLIP, SigLIP, LLaVA projectors)    │    Edge AI MLE intern job reqs    │
+│  • VLA models use the same vision-     │  • Portfolio project demonstrating│
+│    language alignment as a first stage │    both deployment paths at once  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -2029,7 +1767,7 @@ Depth estimation is a fundamental computer vision task that enables machines to 
 ### What You'll Build
 
 ```
-PROJECT: REAL-TIME DEPTH ESTIMATION APP
+PROJECT: MINI VISION-LANGUAGE RETRIEVAL MODEL, DEPLOYED TWO WAYS
 ═══════════════════════════════════════════════════════════════════════════════
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -2037,26 +1775,34 @@ PROJECT: REAL-TIME DEPTH ESTIMATION APP
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌───────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐     │
-│   │  Mobile   │     │  Depth    │     │  Model    │     │   App     │     │
-│   │  Camera   │────▶│  Model    │────▶│  Output   │────▶│  Display  │     │
-│   │  Input    │     │ (Optimized)│    │(Depth Map)│     │           │     │
+│   │  Image /  │     │  Vision / │     │Projection │     │  Shared   │     │
+│   │  Text     │────▶│  Text     │────▶│  Heads    │────▶│ Embedding │     │
+│   │  Input    │     │  Encoder  │     │(trainable)│     │  Space    │     │
+│   │           │     │ (frozen)  │     │           │     │           │     │
 │   └───────────┘     └───────────┘     └───────────┘     └───────────┘     │
-│        │                 │                 │                 │             │
-│        ▼                 ▼                 ▼                 ▼             │
-│   Live RGB          Encoder-           Metric/            Colorized       │
-│   Stream            Decoder            Relative           Depth +         │
-│   (30 FPS)          Inference          Depth              3D Effects      │
+│                                                                 │           │
+│                              ┌──────────────────────────────────┘           │
+│                              ▼                                              │
+│              ┌──────────────────────────────┐                              │
+│              │   TWO DEPLOYMENT TARGETS      │                              │
+│              ├───────────────┬───────────────┤                              │
+│              │  SaaS API      │  Robot Vision │                              │
+│              │  (hosted       │  Reasoning    │                              │
+│              │  retrieval     │  Step (on-    │                              │
+│              │  service)      │  device)      │                              │
+│              └───────────────┴───────────────┘                              │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 DELIVERABLES BY PROJECT END:
 ────────────────────────────────────────────────────────────────────────────────
 
-✓ Trained depth estimation model (based on state-of-the-art architectures)
-✓ Optimized model for edge deployment (quantized, pruned)
-✓ C++ inference pipeline for production
-✓ Mobile/desktop application with real-time visualization
-✓ Performance monitoring and profiling setup
+✓ Trained dual-encoder retrieval model (frozen backbones + projection heads)
+✓ Evaluation: recall@1/@5, retrieval latency, embedding quality checks
+✓ SaaS deployment: multi-tenant embedding/retrieval API (FastAPI + vector DB)
+✓ Edge/robotics deployment: ONNX/CoreML export used as a visual-reasoning
+  step feeding a simple robot task (e.g. "pick up the object matching <query>")
+✓ Performance monitoring for both deployment paths
 ✓ Documentation and model card
 ```
 
@@ -2069,47 +1815,50 @@ PROJECT PHASES & SKILLS LEARNED
 PHASE 1: Research & Setup                    PHASE 2: Data & Training
 ──────────────────────────                   ─────────────────────────
 ┌────────────────────────┐                   ┌────────────────────────┐
-│ • Literature review    │                   │ • Dataset selection    │
-│   - MiDaS, DPT         │                   │   - NYU Depth V2       │
-│   - Depth Anything     │                   │   - KITTI, Diode       │
-│   - ZoeDepth           │                   │ • Data versioning (DVC)│
-│ • Architecture study   │                   │ • Data augmentation    │
-│ • Environment setup    │                   │ • Training pipeline    │
-│   - Git, DVC, Docker   │                   │ • Loss functions       │
-│ • Baseline evaluation  │                   │   - Scale-invariant    │
-└────────────────────────┘                   │   - Gradient loss      │
-         │                                   │ • Evaluation metrics   │
-         │                                   │   - AbsRel, RMSE       │
-         ▼                                   │   - δ < 1.25 accuracy  │
-┌────────────────────────────────────────────┴────────────────────────┐
-│                                                                      │
-│                     PHASE 3: Optimization & Deployment               │
-│                     ──────────────────────────────────               │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐            │
-│  │   Python     │   │   Model      │   │     C++      │            │
-│  │   Model      │──▶│   Export     │──▶│   Inference  │            │
-│  │   (PyTorch)  │   │   (ONNX)     │   │   Pipeline   │            │
-│  └──────────────┘   └──────────────┘   └──────────────┘            │
-│         │                  │                  │                     │
-│         ▼                  ▼                  ▼                     │
-│  Accuracy         Quantization        TensorRT/CoreML              │
-│  Validation       INT8/FP16           Optimization                 │
-│                                                                      │
-└──────────────────────────────────────────────────────────────────────┘
+│ • Literature review    │                   │ • Dataset: synthetic or│
+│   - CLIP, SigLIP       │                   │   HF image-caption set │
+│   - LLaVA projectors   │                   │   (e.g. Flickr30k)     │
+│ • Architecture study   │                   │ • Data versioning (DVC)│
+│   (frozen encoders +   │                   │ • Contrastive training │
+│   trainable heads)     │                   │   (InfoNCE loss)       │
+│ • Environment setup    │                   │ • Evaluation metrics   │
+│   - Git, DVC, Docker   │                   │   - Recall@1, Recall@5 │
+│ • Baseline evaluation  │                   │   - Embedding alignment│
+└────────────────────────┘                   └────────────────────────┘
+         │                                              │
+         ▼                                              ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                                                                        │
+│              PHASE 3: Dual Deployment — SaaS & Edge/Robotics          │
+│              ──────────────────────────────────────────────           │
+│  ┌──────────────┐        ┌──────────────┐        ┌──────────────┐    │
+│  │   Trained    │───┬───▶│  SaaS Path:  │───────▶│  Multi-tenant│    │
+│  │   Model      │   │    │  FastAPI +   │        │  Retrieval   │    │
+│  │   (PyTorch)  │   │    │  Vector DB   │        │  API         │    │
+│  └──────────────┘   │    └──────────────┘        └──────────────┘    │
+│                      │                                                │
+│                      └───▶┌──────────────┐        ┌──────────────┐    │
+│                           │  Edge Path:   │───────▶│  On-device   │    │
+│                           │  ONNX/CoreML  │        │  Visual      │    │
+│                           │  Export       │        │  Reasoning   │    │
+│                           └──────────────┘        └──────────────┘    │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
          │
          ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│                     PHASE 4: Application & Monitoring                  │
-│                     ─────────────────────────────────                  │
+│                PHASE 4: Robotics Integration & Monitoring              │
+│                ─────────────────────────────────────────               │
 │                                                                        │
 │  ┌──────────────────┐     ┌──────────────────┐     ┌────────────────┐ │
-│  │   Build App      │     │   Integrate      │     │   Monitor &    │ │
-│  │   (Mobile/       │────▶│   Camera +       │────▶│   Profile      │ │
-│  │   Desktop)       │     │   Model          │     │   Performance  │ │
+│  │   On-device       │     │   Feed retrieval │     │   Monitor &    │ │
+│  │   embedding       │────▶│   result into a  │────▶│   Profile      │ │
+│  │   inference       │     │   simple robot   │     │   Performance  │ │
+│  │                   │     │   pick/point task│     │                │ │
 │  └──────────────────┘     └──────────────────┘     └────────────────┘ │
 │                                                                        │
-│  Frameworks: Flutter, Qt, or native iOS/Android                        │
-│  Metrics: FPS, latency, memory, power consumption                     │
+│  Frameworks: PyBullet/MuJoCo (sim), or a simple pan-tilt/arm setup     │
+│  Metrics: retrieval latency, recall, robot task success rate           │
 │                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
          │
@@ -2118,117 +1867,100 @@ PHASE 1: Research & Setup                    PHASE 2: Data & Training
 │                     PHASE 5: Advanced Exploration                      │
 │                     ─────────────────────────────                      │
 │                                                                        │
-│  MULTIMODAL EXTENSIONS:                                                │
-│  • Depth + RGB fusion for better accuracy                             │
-│  • IMU integration for temporal consistency                           │
-│  • Text-guided depth (VLM integration concepts)                       │
+│  SAAS EXTENSIONS:                                                      │
+│  • Per-tenant namespace isolation in the vector DB                     │
+│  • Usage metering & rate limiting on the retrieval API                 │
+│  • LoRA adapters per tenant on top of the shared backbone              │
 │                                                                        │
-│  GENERATIVE APPROACHES:                                                │
-│  • Diffusion-based depth refinement                                   │
-│  • Zero-shot depth with foundation models                             │
-│  • Video depth consistency                                            │
+│  ROBOTICS/EDGE EXTENSIONS:                                             │
+│  • Combine retrieval with depth/pose for pick-point selection          │
+│  • Quantize projection heads for lower-power inference                │
+│  • Cross-attention fusion module (already in `src/model.py`) for a     │
+│    single joint representation instead of dual retrieval embeddings   │
 │                                                                        │
 │  CI/CD & VERSIONING:                                                   │
 │  • Data versioning with DVC                                           │
 │  • Model versioning and registry (MLflow)                             │
 │  • Automated testing pipeline                                         │
-│  • DVC pipelines for reproducibility (dvc repro)                      │
-│  • Continuous monitoring in production                                │
+│  • Continuous monitoring in both SaaS and on-device deployments        │
 │                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Key Architectures We'll Study
+### Architecture We'll Study (This Repo's Approach)
 
 ```
-DEPTH ESTIMATION ARCHITECTURES
+FROZEN-BACKBONE DUAL-ENCODER RETRIEVAL
 ═══════════════════════════════════════════════════════════════════════════════
 
-1. ENCODER-DECODER (Classic)
+image ──► VisionEncoder (frozen, e.g. facebook/dinov2-small)
+              │ CLS token (hidden_size)
+              ▼
+          ProjectionHead (trainable) ──► L2-normalized embedding ┐
+                                                                   ├─► InfoNCE
+          ProjectionHead (trainable) ──► L2-normalized embedding ┘   (contrastive)
+              ▲
+              │ mean-pooled tokens (hidden_size)
+text ──► TextEncoder (frozen, e.g. sentence-transformers/all-MiniLM-L6-v2)
+
+KEY INNOVATIONS THIS PROJECT LEANS ON:
 ───────────────────────────────────────────────────────────────────────────────
+• Frozen backbones → cheap to train, cheap to keep both encoders in sync
+  across deployment targets (same weights, whether hosted or exported)
+• Only the small ProjectionHead MLPs (+ learned temperature) are trained
+  (typically <5% of total params) → small artifacts to version, ship, and OTA
+• An optional CrossAttentionFusion module (`src/model.py`) can produce a
+  single joint representation for classification-style tasks (VQA, ITM)
+  instead of a dual retrieval embedding — useful for a robot's "does the
+  scene match this instruction?" check
 
-   Input ──▶ Encoder (ResNet/ViT) ──▶ Decoder (Upsampling) ──▶ Depth Map
-
-   Examples: Monodepth2, PackNet, AdaBins
-
-
-2. DPT (Dense Prediction Transformer)
-───────────────────────────────────────────────────────────────────────────────
-
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │   Image ──▶ ViT Encoder ──▶ Reassemble ──▶ Fusion ──▶ Head ──▶ Depth  │
-   │               │                 │            │                          │
-   │               ▼                 ▼            ▼                          │
-   │         Multi-scale        Resample     Progressive                    │
-   │         Features           Tokens       Refinement                     │
-   │                                                                         │
-   └─────────────────────────────────────────────────────────────────────────┘
-
-   Used by: MiDaS v3, DPT-Large, DPT-Hybrid
-
-
-3. DEPTH ANYTHING (State-of-the-Art)
-───────────────────────────────────────────────────────────────────────────────
-
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │   Unlabeled Images ─┬─▶ DINOv2 Encoder ──▶ DPT Decoder ──▶ Pseudo GT   │
-   │                     │                                          │        │
-   │   Labeled Datasets ─┴──────────────────────────────────────────┘        │
-   │                                          │                              │
-   │                                          ▼                              │
-   │                              Self-training with                         │
-   │                              62M unlabeled images                       │
-   │                                                                         │
-   │   KEY INNOVATIONS:                                                      │
-   │   • Massive unlabeled data utilization                                 │
-   │   • Strong zero-shot generalization                                    │
-   │   • Multiple model sizes (S, B, L)                                     │
-   │                                                                         │
-   └─────────────────────────────────────────────────────────────────────────┘
-
-   Variants: Depth Anything V1, V2, Depth Anything + Metric
+Related architectures: CLIP, SigLIP, LLaVA-style projectors (same
+frozen-encoder-plus-adapter pattern, scaled up)
 ```
 
-### Connection to Multimodal & Future Trends
+### Connection to SaaS, Edge, and Robotics
 
 ```
-DEPTH ESTIMATION IN THE MULTIMODAL ERA
+THIS PROJECT'S TWO DEPLOYMENT PATHS
 ═══════════════════════════════════════════════════════════════════════════════
 
                      ┌─────────────────────────────┐
-                     │     YOUR PROJECT            │
-                     │  (Monocular Depth)          │
+                     │     YOUR PROJECT             │
+                     │  (Mini VL Retrieval Model)   │
                      └──────────────┬──────────────┘
                                     │
-           ┌────────────────────────┼────────────────────────┐
-           │                        │                        │
-           ▼                        ▼                        ▼
-   ┌───────────────┐      ┌───────────────┐      ┌───────────────┐
-   │   VLMs +      │      │  World        │      │   Robotics    │
-   │   Depth       │      │  Models       │      │   VLAs        │
-   └───────────────┘      └───────────────┘      └───────────────┘
-           │                        │                        │
-           ▼                        ▼                        ▼
-   "What is the          Predict future         Navigate and
-   distance to the       3D scene states        manipulate in
-   red chair?"           for planning           3D space
+                     ┌──────────────┴──────────────┐
+                     │                              │
+                     ▼                              ▼
+           ┌───────────────────┐          ┌───────────────────┐
+           │   SaaS MLE PATH    │          │  EDGE AI MLE PATH  │
+           │   Hosted retrieval │          │  On-device visual  │
+           │   API, multi-tenant│          │  reasoning step    │
+           └───────────────────┘          └───────────────────┘
+                     │                              │
+                     ▼                              ▼
+           "Search my tenant's           "Does the object in front
+           photo library for             of the robot match the
+           'a red circle'"                instruction 'pick up the
+                                          blue square'?"
 
 FUTURE EXTENSIONS YOU'LL BE PREPARED FOR:
 ─────────────────────────────────────────────────────────────────────────────
 
-• Depth-aware VLMs: Grounding language in 3D space
-• 3D Scene Understanding: Combine depth + semantics + language
-• Embodied AI: Use depth for robot navigation and manipulation
-• World Models: Depth as a component of predictive models
-• AR/VR: Real-time depth for mixed reality experiences
-• Autonomous Systems: Depth for obstacle detection and path planning
+• Retrieval-augmented robot planning: use retrieved matches to ground a
+  language instruction in the current visual scene (a lightweight VLA
+  precursor step)
+• Multi-tenant embedding search: the SaaS side of this project is a
+  minimal version of what production RAG-over-images systems look like
+• On-device grounding: the edge side is a minimal version of the vision
+  encoder stage inside real VLA models (RT-2, OpenVLA, π0)
+• Scaling up: swap in larger/fine-tuned backbones once the light-training
+  baseline works, per this repo's README "Extending" section
 ```
 
 ---
 
-## 9. Course Discussion
+## 8. Course Discussion
 
 ### Complete Course Curriculum
 
@@ -2328,68 +2060,44 @@ FUTURE EXTENSIONS YOU'LL BE PREPARED FOR:
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  PART 3: PROJECT - MONOCULAR DEPTH ESTIMATION FROM MOBILE CAMERA           │
+│  PART 3: PROJECT - MINI VISION-LANGUAGE RETRIEVAL, SAAS & ROBOTICS         │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  PROJECT CLASS 1: Problem Setup (60 min)                                   │
 │  ────────────────────────────────────────────                               │
 │  • Problem discussion and scope definition                                  │
-│  • Related paper overview (MiDaS, DPT, Depth Anything)                     │
-│  • State-of-the-art discussion                                             │
-│  • Environment setup (Python, PyTorch, OpenCV)                             │
+│  • Related paper overview (CLIP, SigLIP, LLaVA projectors)                 │
+│  • Frozen-backbone + trainable-head architecture walkthrough               │
+│  • Environment setup (Python, PyTorch, HF transformers)                    │
 │                                                                             │
 │  PROJECT CLASS 2: Data & Training (90 min)                                 │
 │  ────────────────────────────────────────────                               │
-│  • Data collection strategies                                              │
-│  • Evaluation metrics (AbsRel, RMSE, δ thresholds)                        │
+│  • Dataset options: synthetic generator vs HF image-caption sets           │
+│  • Evaluation metrics (Recall@1/@5, embedding alignment)                   │
 │  • AI-assisted coding practices                                            │
-│  • Train a mini depth estimation model                                     │
+│  • Train the mini dual-encoder retrieval model                             │
 │                                                                             │
-│  PROJECT CLASS 3: Deployment & Optimization (90 min)                       │
+│  PROJECT CLASS 3: SaaS Deployment (90 min)                                 │
 │  ────────────────────────────────────────────                               │
-│  • Python to C++ conversion                                                │
-│  • Inference optimization techniques                                        │
-│  • Latency optimization                                                    │
-│  • Frame rate improvements                                                  │
+│  • Wrapping inference in a FastAPI retrieval service                       │
+│  • Vector DB integration, multi-tenant namespace isolation                 │
+│  • Rate limiting & usage metering basics                                   │
+│  • Latency/throughput load testing                                         │
 │                                                                             │
-│  PROJECT CLASS 4: App Building & Monitoring (90 min)                       │
+│  PROJECT CLASS 4: Edge & Robotics Deployment (90 min)                      │
 │  ────────────────────────────────────────────                               │
-│  • Model deployment on device                                              │
-│  • Build a mobile/desktop app                                              │
-│  • Performance monitoring                                                   │
-│  • Identifying potential improvements                                       │
+│  • Exporting to ONNX/CoreML for on-device inference                        │
+│  • Wiring the retrieval model as a visual-reasoning step                   │
+│    ("does this match the instruction?") in a simple robot task            │
+│  • On-device performance monitoring                                        │
+│  • Identifying potential improvements                                      │
 │                                                                             │
 │  PROJECT CLASS 5: Advanced Topics (60 min)                                 │
 │  ────────────────────────────────────────────                               │
-│  • Multi-modal improvements (RGB + IMU)                                    │
-│  • Iterative CI/CD for ML                                                  │
-│  • Exploration with generative approaches                                  │
-│  • Future directions                                                        │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  PART 4: INTERVIEW PREPARATION                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  INTERVIEW CLASS 1: ML System Design (60 min)                              │
-│  ────────────────────────────────────────────                               │
-│  • Problem formulation                                                      │
-│  • ML model design for CV systems                                          │
-│  • Trade-offs discussion                                                    │
-│                                                                             │
-│  INTERVIEW CLASS 2: Domain Depth + BQ Mock (60 min)                        │
-│  ────────────────────────────────────────────                               │
-│  • Domain depth or breadth interview                                       │
-│  • Behavioral questions mock interview                                      │
-│  • Detailed feedback                                                        │
-│  (Scheduled during middle of course)                                        │
-│                                                                             │
-│  INTERVIEW CLASS 3: Resume Review (30 min)                                 │
-│  ────────────────────────────────────────────                               │
-│  • Resume optimization for CV/MLE roles                                    │
-│  • Portfolio review                                                         │
-│  • Final Q&A                                                                │
+│  • Cross-attention fusion for joint VQA/ITM-style tasks                    │
+│  • Iterative CI/CD for ML across both deployment paths                     │
+│  • Scaling up: unfreezing backbones, larger datasets                       │
+│  • Future directions toward VLA-style robot policies                       │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -2409,17 +2117,9 @@ PART 1: MLE Foundations          PART 2: CV & Sensor           PART 3: Project
 │ Class 4 │ 1hr                  │ Class 9  │ 1hr             │ Proj 4 │ 1.5hr
 │ Class 5 │ 1hr                  │ Class 10 │ 1.5hr           │ Proj 5 │ 1hr
 ─────────────────                ─────────────────             ─────────────────
-                                                                      │
-                                                                      ▼
-                                                               PART 4: Interview
-                                                               (2.5 hours)
-                                                               ─────────────────
-                                                               │ System Design │ 1hr
-                                                               │ Mock + BQ     │ 1hr
-                                                               │ Resume        │ 0.5hr
-                                                               ─────────────────
 
-TOTAL COURSE: ~19.5 hours
+TOTAL COURSE: ~17 hours (interview-prep part dropped; internship-market
+context now lives in Section 11 instead)
 ```
 
 ### Discussion Questions
@@ -2436,19 +2136,21 @@ TOTAL COURSE: ~19.5 hours
 │     • What companies are you targeting?                                     │
 │                                                                             │
 │  2. TECHNICAL INTERESTS                                                     │
-│     • What CV applications excite you most?                                │
-│     • Have you worked on any CV/perception projects before?                │
-│     • Depth estimation, detection, segmentation - which interests you?     │
+│     • What multimodal/retrieval applications excite you most?              │
+│     • Have you worked on any CV/perception/retrieval projects before?      │
+│     • Retrieval, VQA, robotics grounding - which interests you?            │
 │                                                                             │
 │  3. INDUSTRY PERSPECTIVES                                                   │
 │     • How do you see CV/perception evolving in your target industry?       │
-│     • Edge deployment vs cloud - what trade-offs matter most?              │
-│     • What sensor modalities are you most interested in?                   │
+│     • SaaS API vs edge/robotics deployment - what trade-offs matter most?  │
+│     • Which internship track are you targeting: SaaS MLE, Edge AI MLE,     │
+│       or general MLE/infra MLE?                                            │
 │                                                                             │
 │  4. COURSE EXPECTATIONS                                                     │
-│     • What do you hope to get out of the depth estimation project?         │
-│     • Are you more interested in research or production engineering?       │
-│     • What deployment targets interest you? (Mobile, embedded, cloud)      │
+│     • What do you hope to get out of the vision-language retrieval project?│
+│     • Are you more interested in the SaaS API side or the robotics/edge    │
+│       side of the project?                                                 │
+│     • What deployment targets interest you? (Mobile, embedded, cloud API)  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -2489,7 +2191,7 @@ RESOURCES:
 
 ---
 
-## 10. SaaS MLE Deep Dive
+## 9. SaaS MLE Deep Dive
 
 ### Role Definition
 
@@ -2568,7 +2270,7 @@ customer calling an API, not a data scientist consuming a notebook.
 
 ---
 
-## 11. Edge AI MLE Deep Dive
+## 10. Edge AI MLE Deep Dive
 
 ### Role Definition
 
@@ -2652,6 +2354,122 @@ itself* — with no guaranteed network connection to fall back on.
 
 ---
 
+## 11. MLE Internship Market: 2025-2026 Trends & Openings
+
+### Overall Market Signal
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              MLE / AI INTERNSHIP MARKET SNAPSHOT (2025-2026)                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  VOLUME & GROWTH                                                            │
+│  • ~8,300+ "machine learning internship 2026" listings live on Indeed      │
+│    alone at time of writing; LinkedIn lists 2,000+ ML internship postings  │
+│  • Employers expect ~3.9% more interns in 2025-26 vs 2024-25 (NACE)        │
+│  • AI-keyword internships: 10.3% of all internship postings (Mar 2026),    │
+│    vs 4.2% of full-time early-career postings — internships are where AI   │
+│    hiring is growing fastest, nearly double the share from a year prior   │
+│  • AI job postings overall +74% YoY (LinkedIn Global Talent Trends);       │
+│    "AI Engineer" was the #1 fastest-growing US job title, +143% YoY (2025)│
+│                                                                             │
+│  COMPENSATION                                                               │
+│  • ML intern base pay up ~25-35% YoY since 2023, driven by AI talent demand│
+│  • Interns increasingly expected to contribute to production-grade        │
+│    systems, not just notebooks/side-projects                              │
+│                                                                             │
+│  DEGREE / CREDENTIAL SHIFT                                                  │
+│  • Only ~23-24% of AI/ML postings require no degree at all (up notably);   │
+│    ~36% still list a PhD preference for research-heavy roles              │
+│  • 70% of NACE-surveyed employers now use skill-based hiring (up from 65%) │
+│  • Portfolio projects + demonstrated production skill increasingly        │
+│    outweigh pedigree, especially at startups                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### What This Means by Track
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│           TRACK-SPECIFIC SIGNAL: MLE vs INFRA/PLATFORM MLE                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  GENERAL MLE INTERNSHIPS                                                    │
+│  • Employers increasingly prefer domain depth over breadth: ~58% of MLE    │
+│    postings favor a focused specialist over a generalist                   │
+│  • Cutting-edge methods (GNNs, Bayesian, etc.) rarely required (<2% of     │
+│    postings) — solid fundamentals + one deep specialization wins           │
+│  • ~1 in 3 postings mention AWS specifically — cloud fluency is assumed    │
+│                                                                             │
+│  INFRASTRUCTURE / MLOPS / PLATFORM MLE INTERNSHIPS                         │
+│  • MLOps/AI-platform engineering is growing faster than most other AI      │
+│    specializations right now                                              │
+│  • 45%+ of enterprises are increasing investment in AI deployment and      │
+│    automation capability — this is where infra MLE interns plug in         │
+│  • Typical intern scope: CI/CD for ML, cloud infra management, model       │
+│    performance monitoring, workflow automation between DS/eng/DevOps       │
+│  • Concrete example postings: GM's "AI/ML Engineer — AV ML Infrastructure" │
+│    internship; Unity's ML Infrastructure Engineer (early career) role      │
+│                                                                             │
+│  MULTIMODAL / ROBOTICS-ADJACENT ROLES (relevant to this project)           │
+│  • Deep-specialist demand explicitly named: LLM fine-tuning, multimodal    │
+│    systems, edge AI, and agentic architectures                            │
+│  • Robotics + AI convergence roles growing across manufacturing,          │
+│    logistics, and healthcare automation                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Most In-Demand Skills for MLE Internship Applicants
+
+```
+├── Python (near-universal requirement)
+├── PyTorch (dominant framework in postings)
+├── Cloud platforms — AWS most cited, Azure/GCP close behind
+├── Applied ML fundamentals + statistics (still the baseline, not optional)
+├── One demonstrated deep specialization (CV, NLP, multimodal, RecSys, etc.)
+├── For infra-leaning roles: CI/CD, containerization, cloud cost/scale awareness
+└── Portfolio/production evidence: a shipped project counts more than a
+    class grade — this is exactly what Section 7's project is designed to produce
+```
+
+### How to Read This as a Student
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    TAKEAWAYS FOR YOUR INTERNSHIP SEARCH                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. Pick ONE specialization and go deep — breadth-first resumes are        │
+│     competing against a market that explicitly prefers depth              │
+│                                                                             │
+│  2. A working, documented, deployed project (Section 7) is now more        │
+│     persuasive than coursework alone — skill-based hiring is up            │
+│                                                                             │
+│  3. Decide early whether you're aiming at SaaS MLE, Edge AI MLE, or        │
+│     Infra/MLOps MLE — postings increasingly name these as distinct tracks  │
+│     rather than one undifferentiated "ML Engineer" req                     │
+│                                                                             │
+│  4. Cloud fluency (especially AWS) and CI/CD basics are close to table     │
+│     stakes now, even for research-flavored MLE roles                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Sources:**
+- [Machine Learning Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/machine-learning-engineer-job-outlook-2025/)
+- [2026 Machine Learning Internships: Guide to Salaries & Skills — Fonzi](https://fonzi.ai/blog/machine-learning-internships)
+- [2027 AI/ML internship & new-grad job list — speedyapply/GitHub](https://github.com/speedyapply/2027-AI-College-Jobs)
+- [GM 2026 Summer Intern — AI/ML Engineer, AV ML Infrastructure](https://search-careers.gm.com/en/jobs/jr-202524323/2026-summer-intern-ai-ml-engineer-av-ml-infrastructure-master-s/)
+- [NACE Job Market Trends & Predictions](https://www.naceweb.org/job-market/trends-and-predictions/1000)
+- [As AI Skills Surge, Entry-Level Jobs Lag — Inside Higher Ed](https://www.insidehighered.com/news/student-success/life-after-college/2026/04/30/ai-skills-surge-entry-level-jobs-lag)
+- [Entry-level jobs calling for AI skills nearly doubled — CNBC](https://www.cnbc.com/2026/04/29/entry-level-jobs-calling-for-ai-skills-nearly-doubled-from-a-year-ago-report.html)
+- [AI Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/ai-engineer-job-outlook-2025/)
+- [How to become an MLOps engineer in 2026 — Pluralsight](https://www.pluralsight.com/resources/blog/ai-and-data/how-become-an-mlops-engineer)
+
+---
+
 ## Summary
 
 ```
@@ -2675,11 +2493,19 @@ itself* — with no guaranteed network connection to fall back on.
 │    near-opposite constraints (multi-tenant throughput/cost vs on-device    │
 │    latency/power) — yet both can ship the same underlying model            │
 │                                                                             │
+│  ✓ The course project builds one mini vision-language retrieval model     │
+│    and deploys it BOTH ways: as a multi-tenant SaaS API and as an          │
+│    on-device visual-reasoning step for a robot                            │
+│                                                                             │
 │  ✓ This repo's frozen-backbone + tiny-projection-head design is well       │
 │    suited to EITHER path: a hosted embedding API, or an ONNX/CoreML        │
 │    export running fully offline on-device                                 │
 │                                                                             │
 │  ✓ Edge deployment & multimodal optimization are critical skills           │
+│                                                                             │
+│  ✓ The 2025-2026 internship market rewards depth over breadth, a shipped   │
+│    portfolio project over coursework alone, and an early choice of track   │
+│    (SaaS MLE / Edge AI MLE / Infra MLE) over an undifferentiated resume    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -2696,9 +2522,13 @@ itself* — with no guaranteed network connection to fall back on.
 ---
 
 *This document was created for educational purposes. Feel free to share and adapt with attribution.*
-*Adapted copy: layered SaaS MLE (Section 10) and Edge AI MLE (Section 11) deep dives
-onto the original Class 1 notes, tied to the `ml-multimodal` repo's CLIP-style
-fusion model as a concrete example for both deployment paths.*
+*Adapted copy: retargeted at MLE internship prep. Layered SaaS MLE (Section 9)
+and Edge AI MLE (Section 10) deep dives and an internship market trends
+section (Section 11) onto the original Class 1 notes; replaced the generic
+interview-prep section and the monocular-depth project with a mini
+vision-language retrieval project deployed both as a SaaS API and as a
+robotics visual-reasoning step, tied directly to the `ml-multimodal` repo's
+CLIP-style fusion model.*
 
 **Last Updated**: [Date]
-**Version**: 1.0-saas-edge-adapted
+**Version**: 2.0-internship-saas-edge

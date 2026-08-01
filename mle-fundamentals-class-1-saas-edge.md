@@ -8,28 +8,144 @@
 > **Edge AI MLE** (running the frozen-backbone + projection-head model
 > on-device instead of behind an API). The generic interview-prep material
 > has been removed in favor of a real internship-market trends section
-> (Section 11), and the course project (Section 7) now targets a mini
-> vision-language retrieval model deployed both ways: as a SaaS API and as
-> a visual-reasoning step for a robot.
+> (Section 1, moved up front), and the course project (Section 8) now
+> targets a mini vision-language retrieval model deployed both ways: as a
+> SaaS API and as a visual-reasoning step for a robot.
 
 ---
 
 ## Table of Contents
-1. [MLE Overview in Industry](#1-mle-overview-in-industry)
-2. [Required Skillset](#2-required-skillset)
-3. [Role Comparisons](#3-role-comparisons-mle-vs-data-scientist-vs-ai-engineer-vs-data-engineer)
-4. [Agile Process in ML](#4-agile-process-in-ml)
-5. [Model Training & Deployment](#5-model-training--deployment)
-6. [Latest Trends](#6-latest-trends-2024-2025)
-7. [Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment](#7-course-project-preview-mini-vision-language-retrieval-model--saas--robotics-deployment)
-8. [Course Discussion](#8-course-discussion)
-9. [SaaS MLE Deep Dive](#9-saas-mle-deep-dive)
-10. [Edge AI MLE Deep Dive](#10-edge-ai-mle-deep-dive)
-11. [MLE Internship Market: 2025-2026 Trends & Openings](#11-mle-internship-market-2025-2026-trends--openings)
+1. [MLE Internship Market: 2025-2026 Trends & Openings](#1-mle-internship-market-2025-2026-trends--openings)
+2. [MLE Overview in Industry](#2-mle-overview-in-industry)
+3. [Required Skillset](#3-required-skillset)
+4. [Role Comparisons](#4-role-comparisons-mle-vs-data-scientist-vs-ai-engineer-vs-data-engineer)
+5. [Agile Process in ML](#5-agile-process-in-ml)
+6. [Model Training & Deployment](#6-model-training--deployment)
+7. [Latest Trends](#7-latest-trends-2024-2025)
+8. [Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment](#8-course-project-preview-mini-vision-language-retrieval-model--saas--robotics-deployment)
+9. [Course Discussion](#9-course-discussion)
+10. [SaaS MLE Deep Dive](#10-saas-mle-deep-dive)
+11. [Edge AI MLE Deep Dive](#11-edge-ai-mle-deep-dive)
 
 ---
 
-## 1. MLE Overview in Industry
+## 1. MLE Internship Market: 2025-2026 Trends & Openings
+
+### Overall Market Signal
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              MLE / AI INTERNSHIP MARKET SNAPSHOT (2025-2026)                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  VOLUME & GROWTH                                                            │
+│  • ~8,300+ "machine learning internship 2026" listings live on Indeed      │
+│    alone at time of writing; LinkedIn lists 2,000+ ML internship postings  │
+│  • Employers expect ~3.9% more interns in 2025-26 vs 2024-25 (NACE)        │
+│  • AI-keyword internships: 10.3% of all internship postings (Mar 2026),    │
+│    vs 4.2% of full-time early-career postings — internships are where AI   │
+│    hiring is growing fastest, nearly double the share from a year prior   │
+│  • AI job postings overall +74% YoY (LinkedIn Global Talent Trends);       │
+│    "AI Engineer" was the #1 fastest-growing US job title, +143% YoY (2025)│
+│                                                                             │
+│  COMPENSATION                                                               │
+│  • ML intern base pay up ~25-35% YoY since 2023, driven by AI talent demand│
+│  • Interns increasingly expected to contribute to production-grade        │
+│    systems, not just notebooks/side-projects                              │
+│                                                                             │
+│  DEGREE / CREDENTIAL SHIFT                                                  │
+│  • Only ~23-24% of AI/ML postings require no degree at all (up notably);   │
+│    ~36% still list a PhD preference for research-heavy roles              │
+│  • 70% of NACE-surveyed employers now use skill-based hiring (up from 65%) │
+│  • Portfolio projects + demonstrated production skill increasingly        │
+│    outweigh pedigree, especially at startups                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### What This Means by Track
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│           TRACK-SPECIFIC SIGNAL: MLE vs INFRA/PLATFORM MLE                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  GENERAL MLE INTERNSHIPS                                                    │
+│  • Employers increasingly prefer domain depth over breadth: ~58% of MLE    │
+│    postings favor a focused specialist over a generalist                   │
+│  • Cutting-edge methods (GNNs, Bayesian, etc.) rarely required (<2% of     │
+│    postings) — solid fundamentals + one deep specialization wins           │
+│  • ~1 in 3 postings mention AWS specifically — cloud fluency is assumed    │
+│                                                                             │
+│  INFRASTRUCTURE / MLOPS / PLATFORM MLE INTERNSHIPS                         │
+│  • MLOps/AI-platform engineering is growing faster than most other AI      │
+│    specializations right now                                              │
+│  • 45%+ of enterprises are increasing investment in AI deployment and      │
+│    automation capability — this is where infra MLE interns plug in         │
+│  • Typical intern scope: CI/CD for ML, cloud infra management, model       │
+│    performance monitoring, workflow automation between DS/eng/DevOps       │
+│  • Concrete example postings: GM's "AI/ML Engineer — AV ML Infrastructure" │
+│    internship; Unity's ML Infrastructure Engineer (early career) role      │
+│                                                                             │
+│  MULTIMODAL / ROBOTICS-ADJACENT ROLES (relevant to this project)           │
+│  • Deep-specialist demand explicitly named: LLM fine-tuning, multimodal    │
+│    systems, edge AI, and agentic architectures                            │
+│  • Robotics + AI convergence roles growing across manufacturing,          │
+│    logistics, and healthcare automation                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Most In-Demand Skills for MLE Internship Applicants
+
+```
+├── Python (near-universal requirement)
+├── PyTorch (dominant framework in postings)
+├── Cloud platforms — AWS most cited, Azure/GCP close behind
+├── Applied ML fundamentals + statistics (still the baseline, not optional)
+├── One demonstrated deep specialization (CV, NLP, multimodal, RecSys, etc.)
+├── For infra-leaning roles: CI/CD, containerization, cloud cost/scale awareness
+└── Portfolio/production evidence: a shipped project counts more than a
+    class grade — this is exactly what Section 8's project is designed to produce
+```
+
+### How to Read This as a Student
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    TAKEAWAYS FOR YOUR INTERNSHIP SEARCH                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. Pick ONE specialization and go deep — breadth-first resumes are        │
+│     competing against a market that explicitly prefers depth              │
+│                                                                             │
+│  2. A working, documented, deployed project (Section 8) is now more        │
+│     persuasive than coursework alone — skill-based hiring is up            │
+│                                                                             │
+│  3. Decide early whether you're aiming at SaaS MLE, Edge AI MLE, or        │
+│     Infra/MLOps MLE — postings increasingly name these as distinct tracks  │
+│     rather than one undifferentiated "ML Engineer" req                     │
+│                                                                             │
+│  4. Cloud fluency (especially AWS) and CI/CD basics are close to table     │
+│     stakes now, even for research-flavored MLE roles                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Sources:**
+- [Machine Learning Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/machine-learning-engineer-job-outlook-2025/)
+- [2026 Machine Learning Internships: Guide to Salaries & Skills — Fonzi](https://fonzi.ai/blog/machine-learning-internships)
+- [2027 AI/ML internship & new-grad job list — speedyapply/GitHub](https://github.com/speedyapply/2027-AI-College-Jobs)
+- [GM 2026 Summer Intern — AI/ML Engineer, AV ML Infrastructure](https://search-careers.gm.com/en/jobs/jr-202524323/2026-summer-intern-ai-ml-engineer-av-ml-infrastructure-master-s/)
+- [NACE Job Market Trends & Predictions](https://www.naceweb.org/job-market/trends-and-predictions/1000)
+- [As AI Skills Surge, Entry-Level Jobs Lag — Inside Higher Ed](https://www.insidehighered.com/news/student-success/life-after-college/2026/04/30/ai-skills-surge-entry-level-jobs-lag)
+- [Entry-level jobs calling for AI skills nearly doubled — CNBC](https://www.cnbc.com/2026/04/29/entry-level-jobs-calling-for-ai-skills-nearly-doubled-from-a-year-ago-report.html)
+- [AI Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/ai-engineer-job-outlook-2025/)
+- [How to become an MLOps engineer in 2026 — Pluralsight](https://www.pluralsight.com/resources/blog/ai-and-data/how-become-an-mlops-engineer)
+
+---
+
+## 2. MLE Overview in Industry
 
 ### What is a Machine Learning Engineer?
 
@@ -92,7 +208,7 @@ MLE Job Market Growth (2020-2025)
 
 ---
 
-## 2. Required Skillset
+## 3. Required Skillset
 
 ### The MLE Skill Stack (CV/Perception Focus)
 
@@ -263,7 +379,7 @@ hardware-aware engineering.
 
 ---
 
-## 3. Role Comparisons: MLE vs Data Scientist vs AI Engineer vs Data Engineer
+## 4. Role Comparisons: MLE vs Data Scientist vs AI Engineer vs Data Engineer
 
 ### High-Level Role Comparison
 
@@ -437,7 +553,7 @@ down to run on a phone.
 
 ---
 
-## 4. Agile Process in ML
+## 5. Agile Process in ML
 
 ### Why Agile for ML?
 
@@ -640,7 +756,7 @@ ML Sprint Review Structure
 
 ---
 
-## 5. Model Training & Deployment
+## 6. Model Training & Deployment
 
 ### End-to-End ML Pipeline
 
@@ -1210,7 +1326,7 @@ ALERTING THRESHOLDS
 
 ---
 
-## 6. Latest Trends (2024-2025)
+## 7. Latest Trends (2024-2025)
 
 ### The Computer Vision & Multimodal AI Landscape
 
@@ -1729,7 +1845,7 @@ DOMAIN SPECIFIC
 
 ---
 
-## 7. Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment
+## 8. Course Project Preview: Mini Vision-Language Retrieval Model — SaaS & Robotics Deployment
 
 ### Why a Vision-Language Retrieval Model?
 
@@ -1960,7 +2076,7 @@ FUTURE EXTENSIONS YOU'LL BE PREPARED FOR:
 
 ---
 
-## 8. Course Discussion
+## 9. Course Discussion
 
 ### Complete Course Curriculum
 
@@ -2119,7 +2235,7 @@ PART 1: MLE Foundations          PART 2: CV & Sensor           PART 3: Project
 ─────────────────                ─────────────────             ─────────────────
 
 TOTAL COURSE: ~17 hours (interview-prep part dropped; internship-market
-context now lives in Section 11 instead)
+context now lives in Section 1 instead)
 ```
 
 ### Discussion Questions
@@ -2191,7 +2307,7 @@ RESOURCES:
 
 ---
 
-## 9. SaaS MLE Deep Dive
+## 10. SaaS MLE Deep Dive
 
 ### Role Definition
 
@@ -2270,7 +2386,7 @@ customer calling an API, not a data scientist consuming a notebook.
 
 ---
 
-## 10. Edge AI MLE Deep Dive
+## 11. Edge AI MLE Deep Dive
 
 ### Role Definition
 
@@ -2354,122 +2470,6 @@ itself* — with no guaranteed network connection to fall back on.
 
 ---
 
-## 11. MLE Internship Market: 2025-2026 Trends & Openings
-
-### Overall Market Signal
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│              MLE / AI INTERNSHIP MARKET SNAPSHOT (2025-2026)                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  VOLUME & GROWTH                                                            │
-│  • ~8,300+ "machine learning internship 2026" listings live on Indeed      │
-│    alone at time of writing; LinkedIn lists 2,000+ ML internship postings  │
-│  • Employers expect ~3.9% more interns in 2025-26 vs 2024-25 (NACE)        │
-│  • AI-keyword internships: 10.3% of all internship postings (Mar 2026),    │
-│    vs 4.2% of full-time early-career postings — internships are where AI   │
-│    hiring is growing fastest, nearly double the share from a year prior   │
-│  • AI job postings overall +74% YoY (LinkedIn Global Talent Trends);       │
-│    "AI Engineer" was the #1 fastest-growing US job title, +143% YoY (2025)│
-│                                                                             │
-│  COMPENSATION                                                               │
-│  • ML intern base pay up ~25-35% YoY since 2023, driven by AI talent demand│
-│  • Interns increasingly expected to contribute to production-grade        │
-│    systems, not just notebooks/side-projects                              │
-│                                                                             │
-│  DEGREE / CREDENTIAL SHIFT                                                  │
-│  • Only ~23-24% of AI/ML postings require no degree at all (up notably);   │
-│    ~36% still list a PhD preference for research-heavy roles              │
-│  • 70% of NACE-surveyed employers now use skill-based hiring (up from 65%) │
-│  • Portfolio projects + demonstrated production skill increasingly        │
-│    outweigh pedigree, especially at startups                              │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### What This Means by Track
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│           TRACK-SPECIFIC SIGNAL: MLE vs INFRA/PLATFORM MLE                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  GENERAL MLE INTERNSHIPS                                                    │
-│  • Employers increasingly prefer domain depth over breadth: ~58% of MLE    │
-│    postings favor a focused specialist over a generalist                   │
-│  • Cutting-edge methods (GNNs, Bayesian, etc.) rarely required (<2% of     │
-│    postings) — solid fundamentals + one deep specialization wins           │
-│  • ~1 in 3 postings mention AWS specifically — cloud fluency is assumed    │
-│                                                                             │
-│  INFRASTRUCTURE / MLOPS / PLATFORM MLE INTERNSHIPS                         │
-│  • MLOps/AI-platform engineering is growing faster than most other AI      │
-│    specializations right now                                              │
-│  • 45%+ of enterprises are increasing investment in AI deployment and      │
-│    automation capability — this is where infra MLE interns plug in         │
-│  • Typical intern scope: CI/CD for ML, cloud infra management, model       │
-│    performance monitoring, workflow automation between DS/eng/DevOps       │
-│  • Concrete example postings: GM's "AI/ML Engineer — AV ML Infrastructure" │
-│    internship; Unity's ML Infrastructure Engineer (early career) role      │
-│                                                                             │
-│  MULTIMODAL / ROBOTICS-ADJACENT ROLES (relevant to this project)           │
-│  • Deep-specialist demand explicitly named: LLM fine-tuning, multimodal    │
-│    systems, edge AI, and agentic architectures                            │
-│  • Robotics + AI convergence roles growing across manufacturing,          │
-│    logistics, and healthcare automation                                   │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Most In-Demand Skills for MLE Internship Applicants
-
-```
-├── Python (near-universal requirement)
-├── PyTorch (dominant framework in postings)
-├── Cloud platforms — AWS most cited, Azure/GCP close behind
-├── Applied ML fundamentals + statistics (still the baseline, not optional)
-├── One demonstrated deep specialization (CV, NLP, multimodal, RecSys, etc.)
-├── For infra-leaning roles: CI/CD, containerization, cloud cost/scale awareness
-└── Portfolio/production evidence: a shipped project counts more than a
-    class grade — this is exactly what Section 7's project is designed to produce
-```
-
-### How to Read This as a Student
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    TAKEAWAYS FOR YOUR INTERNSHIP SEARCH                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  1. Pick ONE specialization and go deep — breadth-first resumes are        │
-│     competing against a market that explicitly prefers depth              │
-│                                                                             │
-│  2. A working, documented, deployed project (Section 7) is now more        │
-│     persuasive than coursework alone — skill-based hiring is up            │
-│                                                                             │
-│  3. Decide early whether you're aiming at SaaS MLE, Edge AI MLE, or        │
-│     Infra/MLOps MLE — postings increasingly name these as distinct tracks  │
-│     rather than one undifferentiated "ML Engineer" req                     │
-│                                                                             │
-│  4. Cloud fluency (especially AWS) and CI/CD basics are close to table     │
-│     stakes now, even for research-flavored MLE roles                       │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Sources:**
-- [Machine Learning Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/machine-learning-engineer-job-outlook-2025/)
-- [2026 Machine Learning Internships: Guide to Salaries & Skills — Fonzi](https://fonzi.ai/blog/machine-learning-internships)
-- [2027 AI/ML internship & new-grad job list — speedyapply/GitHub](https://github.com/speedyapply/2027-AI-College-Jobs)
-- [GM 2026 Summer Intern — AI/ML Engineer, AV ML Infrastructure](https://search-careers.gm.com/en/jobs/jr-202524323/2026-summer-intern-ai-ml-engineer-av-ml-infrastructure-master-s/)
-- [NACE Job Market Trends & Predictions](https://www.naceweb.org/job-market/trends-and-predictions/1000)
-- [As AI Skills Surge, Entry-Level Jobs Lag — Inside Higher Ed](https://www.insidehighered.com/news/student-success/life-after-college/2026/04/30/ai-skills-surge-entry-level-jobs-lag)
-- [Entry-level jobs calling for AI skills nearly doubled — CNBC](https://www.cnbc.com/2026/04/29/entry-level-jobs-calling-for-ai-skills-nearly-doubled-from-a-year-ago-report.html)
-- [AI Engineer Job Outlook 2026 — 365 Data Science](https://365datascience.com/career-advice/career-guides/ai-engineer-job-outlook-2025/)
-- [How to become an MLOps engineer in 2026 — Pluralsight](https://www.pluralsight.com/resources/blog/ai-and-data/how-become-an-mlops-engineer)
-
----
-
 ## Summary
 
 ```
@@ -2522,13 +2522,13 @@ itself* — with no guaranteed network connection to fall back on.
 ---
 
 *This document was created for educational purposes. Feel free to share and adapt with attribution.*
-*Adapted copy: retargeted at MLE internship prep. Layered SaaS MLE (Section 9)
-and Edge AI MLE (Section 10) deep dives and an internship market trends
-section (Section 11) onto the original Class 1 notes; replaced the generic
-interview-prep section and the monocular-depth project with a mini
-vision-language retrieval project deployed both as a SaaS API and as a
-robotics visual-reasoning step, tied directly to the `ml-multimodal` repo's
-CLIP-style fusion model.*
+*Adapted copy: retargeted at MLE internship prep. Layered SaaS MLE (Section 10)
+and Edge AI MLE (Section 11) deep dives and an internship market trends
+section (Section 1, moved to the front) onto the original Class 1 notes;
+replaced the generic interview-prep section and the monocular-depth project
+with a mini vision-language retrieval project (Section 8) deployed both as
+a SaaS API and as a robotics visual-reasoning step, tied directly to the
+`ml-multimodal` repo's CLIP-style fusion model.*
 
 **Last Updated**: [Date]
-**Version**: 2.0-internship-saas-edge
+**Version**: 2.1-internship-front-saas-edge

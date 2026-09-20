@@ -1,0 +1,16 @@
+# Extra dependencies for Class 4's deployment code (src/service.py,
+# src/export_onnx.py, src/benchmark_onnx.py). Kept separate from
+# requirements.txt so training-only environments don't need FastAPI/ONNX.
+#
+# TensorRT itself is NOT pip-installable in general -- install the SDK
+# from NVIDIA (or use the nvcr.io/nvidia/tensorrt container) for
+# deploy/export_tensorrt.sh.
+#
+# onnxscript is only needed if you're on torch>=2.5 AND remove the
+# dynamo=False compatibility shim in src/export_onnx.py -- not required
+# as shipped, but harmless to have installed either way.
+fastapi>=0.111
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+onnx>=1.16
+onnxruntime>=1.18

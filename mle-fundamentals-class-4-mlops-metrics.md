@@ -15,7 +15,7 @@
 ## Table of Contents
 1. [Recap & Class 4 Overview](#1-recap--class-4-overview)
 2. [Part 1 — Review: GCP & ML Tooling Setup (15 min)](#2-part-1--review-gcp--ml-tooling-setup-15-min)
-3. [Part 2 — Deployment Pipelines & Inference Metrics by Industry (75 min)](#3-part-2--deployment-pipelines--inference-metrics-by-industry-75-min)
+3. [Part 2 — Deployment Pipelines & Inference Metrics by Industry (70 min)](#3-part-2--deployment-pipelines--inference-metrics-by-industry-70-min)
 4. [Course Project: Instrument This Repo](#4-course-project-instrument-this-repo)
 5. [Metrics Cheat Sheet](#5-metrics-cheat-sheet)
 6. [Course Discussion](#6-course-discussion)
@@ -72,9 +72,10 @@ a time.
 │  0:15 ─ 0:20   Part 2.1: A common metrics vocabulary                       │
 │  0:20 ─ 0:40   Part 2.2: SaaS — cloud deployment pipeline + metrics        │
 │  0:40 ─ 1:00   Part 2.3: On-device — ONNX/TensorRT pipeline + metrics      │
-│  1:00 ─ 1:15   Part 2.4: LLM/VLM/multimodal — pipeline + metrics           │
-│  1:15 ─ 1:20   Part 2.5: Side-by-side comparison                          │
-│  1:20 ─ 1:30   Project kickoff + Q&A                                       │
+│  1:00 ─ 1:20   Part 2.4: LLM/VLM/multimodal — architectures, pipeline,    │
+│                 KV cache, and metrics                                     │
+│  1:20 ─ 1:25   Part 2.5: Side-by-side comparison                          │
+│  1:25 ─ 1:30   Project kickoff + Q&A                                       │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -87,7 +88,7 @@ a time.
 | **Metrics vocabulary** | Define latency (p50/p95/p99), throughput, and concurrency, and relate them with Little's Law |
 | **SaaS deployment** | Describe a typical cloud deployment pipeline (build → container → serve → scale → monitor) and the metrics it's judged on |
 | **On-device deployment** | Describe the ONNX/TensorRT (and mobile) export pipeline and the metrics it's judged on |
-| **LLM/VLM deployment** | Describe a token-generation serving pipeline (continuous batching, KV cache) and its distinct metrics (TTFT, TPOT) |
+| **LLM/VLM deployment** | Name the popular LLM/VLM serving engines and VLM architecture patterns, and explain why decode (not encoding) needs a KV cache |
 | **Project** | Deploy this repo's retrieval model as a cloud service AND export it toward an on-device path, and measure both |
 
 ---
@@ -183,7 +184,7 @@ deployment exercises if it isn't fixed now.
 
 ---
 
-## 3. Part 2 — Deployment Pipelines & Inference Metrics by Industry (75 min)
+## 3. Part 2 — Deployment Pipelines & Inference Metrics by Industry (70 min)
 
 ### 3.1 A Common Metrics Vocabulary (5 min)
 
@@ -233,6 +234,11 @@ The metrics only make sense once you know what's actually running.
 
 ### 3.2 SaaS: Cloud Deployment Pipeline → Metrics (20 min)
 
+*This whole section deploys ONE real model from this repo — the*
+*`FusionCLIPModel` dual encoder in `src/model.py`, checkpointed at*
+*`outputs/fusion_model.pt` by `src/train.py`. Every command below is*
+*runnable against that checkpoint, not pseudocode.*
+
 #### 3.2.1 Typical Cloud Deployment Pipeline
 
 A SaaS inference service isn't "run `infer.py` on a bigger machine" — it's
@@ -245,30 +251,35 @@ a pipeline with distinct build-time and run-time stages:
 │                                                                             │
 │  BUILD TIME                                                                │
 │  ───────────                                                               │
-│  1. Package     Trained checkpoint + a serving handler                     │
-│                  (src/infer.py logic wrapped for a request/response API)   │
-│  2. Containerize Dockerfile: pinned deps, CUDA base image if GPU-serving,  │
-│                  model weights baked in or pulled from GCS at startup      │
-│  3. CI          Build image, run unit + smoke tests, push to               │
-│                  Artifact Registry (tagged by commit SHA)                  │
+│  1. Package     Trained checkpoint + a serving handler that wraps          │
+│                  FusionCLIPModel.encode_text/encode_image in a request/    │
+│                  response API  →  src/service.py                          │
+│  2. Containerize Dockerfile: pinned deps, model loaded once at startup,    │
+│                  checkpoint pulled via DVC, not baked into the image      │
+│                  →  deploy/Dockerfile                                      │
+│  3. CI          Build image, run unit + smoke tests (does /health         │
+│                  respond, does one /embed_text call succeed), push to     │
+│                  Artifact Registry, tagged by commit SHA                   │
 │                                                                             │
 │  DEPLOY TIME                                                               │
 │  ────────────                                                              │
-│  4. Serve       Deploy the image behind a managed runtime:                 │
-│                    • Cloud Run (simplest — HTTP container, autoscale       │
-│                      0→N, optional GPU)                                    │
-│                    • GKE + a model server (Triton/TorchServe/BentoML) —    │
-│                      more control, needed for custom batching              │
-│                    • Vertex AI Endpoints — managed model serving,          │
-│                      built-in traffic splitting for canaries               │
-│  5. Front        API Gateway / Load Balancer: auth (API keys/OAuth),       │
-│                  per-tenant rate limiting, request routing                 │
-│  6. Scale        Autoscaling policy: min/max replicas, target concurrency  │
-│                  per instance, scale-to-zero for low-traffic tenants       │
-│  7. Observe      Cloud Monitoring + Logging: latency/error dashboards,     │
-│                  alerting on SLO burn rate                                 │
-│  8. Roll out     Canary or blue/green: new revision gets 5% of traffic,    │
-│                  promoted to 100% only if metrics hold                     │
+│  4. Serve       Deploy the image behind a managed runtime  →              │
+│                  deploy/deploy_cloud_run.sh:                              │
+│                    • Cloud Run (used here — simplest: HTTP container,     │
+│                      autoscale 0→N, optional GPU)                         │
+│                    • GKE + a model server (Triton/TorchServe/BentoML) —   │
+│                      more control, needed for custom batching             │
+│                    • Vertex AI Endpoints — managed model serving,         │
+│                      built-in traffic splitting for canaries              │
+│  5. Front        API Gateway / Load Balancer: auth (API keys/OAuth),      │
+│                  per-tenant rate limiting, request routing                │
+│  6. Scale        Autoscaling policy: min/max replicas, target concurrency │
+│                  per instance, scale-to-zero for low-traffic tenants      │
+│  7. Observe      Cloud Monitoring + Logging: latency/error dashboards,    │
+│                  alerting on SLO burn rate — fed by the structured        │
+│                  latency_ms logging already in src/service.py            │
+│  8. Roll out     Canary or blue/green: new revision gets 5% of traffic,   │
+│                  promoted to 100% only if metrics hold                    │
 │                                                                             │
 │  Client ──▶ LB/Gateway ──▶ [Revision N-1: 95%] ──▶ Model Server ──▶ (logs, │
 │                        └──▶ [Revision N (canary): 5%] ──▶ Model Server     │  metrics)
@@ -279,9 +290,89 @@ a pipeline with distinct build-time and run-time stages:
 **Why the pipeline matters before the metrics:** p99 latency measured on
 a single always-warm replica means nothing once real traffic hits
 autoscaled, cold-starting, canary-split infrastructure. The metrics in
-3.2.2 are only meaningful in the context of *this* pipeline.
+3.2.4 are only meaningful in the context of *this* pipeline.
 
-#### 3.2.2 SaaS Inference Metrics
+#### 3.2.2 From `FusionCLIPModel` to a Deployable Service
+
+`src/infer.py` already does inference — but it loads the model, reads a
+manifest, and exits. A service has to load the model *once* and then
+answer requests indefinitely. `src/service.py` (new, in the repo) makes
+exactly that change, reusing this repo's own model/config classes:
+
+```python
+# src/service.py (excerpt — full file in the repo)
+from .config import Config
+from .model import FusionCLIPModel
+
+state: dict = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ckpt = torch.load(CHECKPOINT_PATH, map_location="cpu")
+    cfg = Config(**ckpt["config"])                    # same pattern as infer.py
+    model = FusionCLIPModel(
+        cfg.vision_model_name, cfg.text_model_name, cfg.embed_dim,
+        freeze_vision=cfg.freeze_vision, freeze_text=cfg.freeze_text,
+    ).to(cfg.device)
+    model.load_state_dict(ckpt["model_state"])
+    model.eval()
+    state["model"] = model                             # loaded ONCE, not per-request
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
+@app.post("/embed_text")
+def embed_text(req: EmbedTextRequest):
+    start = time.perf_counter()
+    embed = state["model"].encode_text(...)             # the actual inference call
+    latency_ms = (time.perf_counter() - start) * 1000    # measured on EVERY request
+    return {"embedding": embed.squeeze(0).tolist(), "latency_ms": latency_ms}
+```
+
+Run it locally against the checkpoint already in `outputs/`:
+
+```bash
+pip install -r requirements.txt -r requirements-deploy.txt
+uvicorn src.service:app --host 0.0.0.0 --port 8080
+
+curl http://localhost:8080/health
+curl -X POST http://localhost:8080/embed_text \
+  -H 'Content-Type: application/json' -d '{"text": "a red circle"}'
+```
+
+#### 3.2.3 Deploying to GCP: Cloud Run, Step by Step
+
+`deploy/Dockerfile` and `deploy/deploy_cloud_run.sh` (new, in the repo)
+turn that local service into a GCP deployment, using the same GCS/DVC
+setup verified in Part 1:
+
+```bash
+# deploy/deploy_cloud_run.sh (excerpt — full script in the repo)
+dvc pull outputs/fusion_model.pt.dvc                          # step 1: get the checkpoint
+gcloud builds submit --tag "${IMAGE}" -f deploy/Dockerfile .    # step 2+3: build & push
+gcloud run deploy "${SERVICE}" \
+  --image "${IMAGE}" --region "${REGION}" \
+  --min-instances=1 --max-instances=20 --concurrency=40 \       # step 4-6: serve + scale
+  --memory=2Gi --cpu=2 --allow-unauthenticated
+```
+
+A few decisions worth explaining, not just running:
+
+| Decision in the script | Why |
+|---|---|
+| `dvc pull` before `docker build`, not `COPY outputs/` in the Dockerfile | Keeps the image reusable across model versions — retraining doesn't require a rebuild, only a redeploy pointing at a new checkpoint |
+| `--min-instances=1` | Avoids paying a cold-start penalty (model + HF backbone load) on the very first request of a demo or load test; drop to `0` for a genuinely low-traffic tenant to save cost |
+| `--concurrency=40` | Requests one Cloud Run instance handles in parallel. PyTorch inference holds the GIL during a forward pass, so this is tuned against measured p95/p99 (3.2.5), not guessed — too high queues requests behind a slow call, too low wastes instances |
+| Structured `latency_ms` field in every log line | Cloud Logging can turn a log field into a Cloud Monitoring metric directly — this is how the dashboards in step 7 actually get built, not a separate instrumentation system |
+| `gcloud builds submit` → Artifact Registry, tagged by commit SHA | Every deployed revision is traceable back to the exact code + model version that produced it — required for the canary rollback in step 8 |
+
+Run it:
+
+```bash
+REGION=us-central1 bash deploy/deploy_cloud_run.sh
+```
+
+#### 3.2.4 SaaS Inference Metrics
 
 | Metric | What It Captures | Example SLO |
 |---|---|---|
@@ -295,33 +386,17 @@ autoscaled, cold-starting, canary-split infrastructure. The metrics in
 | **Availability (uptime)** | % of time the service met its SLA | 99.9% (≈43 min downtime/mo) |
 | **Noisy-neighbor isolation** | One tenant's burst doesn't degrade others' latency | Per-tenant rate limits enforced |
 
-#### 3.2.3 Worked Example: Deploying the Retrieval API to Cloud Run
+#### 3.2.5 Worked Example: Load-Testing the Deployed Service
 
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY src/ src/
-ENV MODEL_SNAPSHOT_URI=gs://<your-bucket-name>/models/fusion_clip_v3
-CMD ["uvicorn", "src.service:app", "--host", "0.0.0.0", "--port", "8080"]
-```
+With the service live at the URL `deploy/deploy_cloud_run.sh` printed,
+load-test `/embed_text` at increasing concurrency (see Section 4's
+project steps for the full sweep):
 
 ```bash
-# Build & push
-gcloud builds submit --tag gcr.io/$(gcloud config get-value project)/retrieval-api
+SERVICE_URL=$(gcloud run services describe retrieval-api --region us-central1 --format='value(status.url)')
 
-# Deploy with autoscaling (min 1 to avoid cold start on every canary test,
-# max 20, allow 40 concurrent requests per instance)
-gcloud run deploy retrieval-api \
-  --image gcr.io/$(gcloud config get-value project)/retrieval-api \
-  --min-instances=1 --max-instances=20 --concurrency=40 \
-  --allow-unauthenticated
-
-# Load test at increasing concurrency (see Section 4's project steps)
-hey -z 60s -c 50 -m POST -d '{"text":"a red circle"}' \
-  https://retrieval-api-xxxxx.run.app/embed
+hey -z 60s -c 50 -m POST -H 'Content-Type: application/json' \
+  -d '{"text":"a red circle"}' "${SERVICE_URL}/embed_text"
 ```
 
 **Example results** (illustrative — your numbers will differ):
@@ -340,6 +415,12 @@ pipeline has to be understood before the metric is interpreted.
 ---
 
 ### 3.3 On-Device: ONNX/TensorRT Deployment Pipeline → Metrics (20 min)
+
+*Same real model as 3.2 — `FusionCLIPModel` from `outputs/fusion_model.pt`*
+*— but exported for a fixed-hardware target instead of a cloud server.*
+*The scripts referenced below (`src/export_onnx.py`,*
+*`src/benchmark_onnx.py`, `deploy/export_tensorrt.sh`) are real files in*
+*the repo, not pseudocode.*
 
 #### 3.3.1 Typical On-Device Deployment Pipeline
 
@@ -409,38 +490,45 @@ re-run per target GPU architecture.
 
 #### 3.3.3 Worked Example: ONNX → TensorRT for the Vision Encoder
 
+`src/export_onnx.py` (new, in the repo) exports `encode_image` /
+`encode_text` — the SAME methods `src/service.py` calls in 3.2 — as
+standalone ONNX graphs, then validates the export against PyTorch before
+you trust it:
+
 ```python
-# export_onnx.py — export this repo's VisionEncoder + ProjectionHead
-import torch
-from src.model import VisionEncoder, ProjectionHead
-from src.config import Config
+# src/export_onnx.py (excerpt — full file in the repo)
+class VisionTower(nn.Module):
+    """model.encode_image as a single traceable nn.Module graph."""
+    def __init__(self, model: FusionCLIPModel):
+        super().__init__()
+        self.model = model
 
-config = Config()
-vision = VisionEncoder(config).eval()
-head = ProjectionHead(config.vision_hidden_size, config.embed_dim).eval()
+    def forward(self, pixel_values):
+        return self.model.encode_image(pixel_values)          # backbone + head + L2-norm, in one graph
 
-dummy = torch.randn(1, 3, 224, 224)
-torch.onnx.export(
-    torch.nn.Sequential(vision, head), dummy, "vision_tower.onnx",
-    input_names=["pixel_values"], output_names=["embedding"],
-    dynamic_axes={"pixel_values": {0: "batch"}, "embedding": {0: "batch"}},
-    opset_version=17,
-)
+def _validate(torch_module, onnx_path, inputs):
+    torch_out = torch_module(*inputs.values()).numpy()
+    sess = ort.InferenceSession(onnx_path.as_posix())
+    onnx_out = sess.run(None, {k: v.numpy() for k, v in inputs.items()})[0]
+    assert np.abs(torch_out - onnx_out).max() < 1e-3           # never ship an unvalidated export
 ```
 
-```bash
-# Validate ONNX matches PyTorch numerically
-python -c "
-import onnxruntime as ort, torch, numpy as np
-sess = ort.InferenceSession('vision_tower.onnx')
-x = torch.randn(1, 3, 224, 224)
-onnx_out = sess.run(None, {'pixel_values': x.numpy()})[0]
-# compare against the torch forward pass, expect np.allclose(..., atol=1e-3)
-"
+Run the export, benchmark on CPU, then hand off to TensorRT on GPU/Jetson
+hardware:
 
-# Build a TensorRT FP16 engine and benchmark on the TARGET GPU
-trtexec --onnx=vision_tower.onnx --saveEngine=vision_tower_fp16.engine --fp16
-trtexec --loadEngine=vision_tower_fp16.engine --avgRuns=100 --warmUp=20
+```bash
+# Step 1: export both towers from the trained checkpoint, with validation
+python -m src.export_onnx --checkpoint outputs/fusion_model.pt --tower both
+#   -> outputs/onnx/vision_tower.onnx, outputs/onnx/text_tower.onnx
+#   [vision_tower.onnx] max abs diff PyTorch vs ONNX Runtime: 3.1e-06
+
+# Step 2: CPU baseline latency (runs anywhere, no GPU needed) —
+# src/benchmark_onnx.py reports a full p50/p95/p99 distribution, not an average
+python -m src.benchmark_onnx --onnx outputs/onnx/vision_tower.onnx \
+  --input_name pixel_values --shape 1 3 224 224
+
+# Step 3: on an NVIDIA GPU / Jetson box — build + benchmark a TensorRT engine
+bash deploy/export_tensorrt.sh outputs/onnx/vision_tower.onnx outputs/onnx/vision_tower_fp16.engine
 ```
 
 **Example results** (illustrative — always re-measure on your actual
@@ -459,9 +547,68 @@ benchmarking the engine, not by reading the PyTorch model's FLOP count.
 
 ---
 
-### 3.4 LLM / VLM / Multimodal: Deployment Pipeline → Metrics (15 min)
+### 3.4 LLM / VLM / Multimodal: Deployment Pipeline → Metrics (20 min)
 
-#### 3.4.1 Typical LLM/VLM Serving Pipeline
+#### 3.4.1 Popular LLM/VLM Inference Architectures
+
+Before the pipeline: what you'd actually reach for. LLM/VLM serving has
+consolidated around a handful of engines, each built specifically around
+the KV-cache/batching problem explained in 3.4.3 — a generic model server
+(TorchServe, a plain FastAPI wrapper) does not solve this well:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│         POPULAR LLM/VLM INFERENCE (SERVING ENGINE) ARCHITECTURES            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  vLLM                 PagedAttention — KV cache stored in fixed-size       │
+│                        "pages" like OS virtual memory, near-zero waste;    │
+│                        the default open-source choice for GPU serving      │
+│                                                                             │
+│  NVIDIA TensorRT-LLM   Kernel-fused, GPU-architecture-specific compiled     │
+│                        engines (same idea as TensorRT in 3.3, extended     │
+│                        to autoregressive decode + in-flight batching)      │
+│                                                                             │
+│  Hugging Face TGI      Production server behind HF Inference Endpoints;    │
+│                        continuous batching, tensor parallelism             │
+│                                                                             │
+│  Triton Inference      Multi-framework model server; hosts a               │
+│  Server                TensorRT-LLM or vLLM backend for enterprise fleets  │
+│                                                                             │
+│  SGLang                RadixAttention — shares cached KV-cache PREFIXES    │
+│                        across requests; a big win when many requests       │
+│                        share a system prompt                              │
+│                                                                             │
+│  llama.cpp / GGUF      CPU- and edge-oriented, quantized (GGUF) —          │
+│                        the on-device analogue of ONNX/TensorRT for LLMs    │
+│                        (ties directly to Part 2.3's export pipeline)       │
+│                                                                             │
+│  MLC-LLM               Compiles LLMs to run on phone/browser/edge GPUs     │
+│                                                                             │
+│  DeepSpeed-Inference /  Tensor + pipeline parallelism across many GPUs     │
+│  DeepSpeed-MII          for models too large for one device               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**VLM architecture patterns** — how the image actually reaches the LLM
+decoder differs by family:
+
+| Pattern | Example Models | How Vision Enters the LLM |
+|---|---|---|
+| Dual-encoder + projector (LLaVA-style) | LLaVA, Qwen-VL | Frozen ViT → small MLP/linear projector → image patch embeddings prepended as extra "tokens" ahead of the text tokens, fed through the SAME decoder |
+| Cross-attention fusion | Flamingo, Llama 3.2 Vision | Frozen vision tower; new cross-attention layers interleaved in the LLM read image features directly, without expanding the text token sequence |
+| Native multimodal (early fusion) | Gemini-class, GPT-4V/5-class, some Qwen2-VL variants | Trained jointly from the start on interleaved image/text tokens — no bolted-on projector |
+| Hosted API (architecture opaque) | Claude, GPT, Gemini via API | You call an endpoint; the serving architecture is the provider's concern, not yours |
+
+This repo's `FusionCLIPModel` (`src/model.py`) is a dual encoder too, but
+for **retrieval** — two aligned embeddings compared with a dot product,
+never generating text. Bolt a small text-decoder head onto its
+`VisionEncoder`'s patch tokens instead of pooling them, and you'd have
+the LLaVA-style pattern above; that's the architectural bridge between
+what this repo builds and what a VLM adds.
+
+#### 3.4.2 Typical LLM/VLM Serving Pipeline
 
 Generative models break the "one request in, one response out" model
 entirely — a request produces a *sequence* of tokens, generated one at a
@@ -518,7 +665,80 @@ fixed-size forward pass; an LLM request is N sequential forward passes
 every step. That's why LLM serving engines exist as their own category
 (vLLM, TensorRT-LLM, TGI) instead of reusing a generic model server.
 
-#### 3.4.2 LLM/VLM Inference Metrics
+#### 3.4.3 Why the KV Cache Is Critical — Decode Needs It, Encoding Doesn't
+
+This is the single idea that explains both step 2's compression choices
+and step 4's engine architecture above, so it's worth deriving, not just
+naming.
+
+**The problem, without a cache:** in a transformer decoder, generating
+token *t* requires attention over every token 1..*t*, which means
+computing Key and Value projections for every one of those tokens. If
+you recompute K/V from scratch at every decode step, generating a
+200-token response means re-running the K/V projections for token 1
+two hundred times, token 2 one hundred ninety-nine times, and so on —
+total compute grows roughly with the *cube* of sequence length, almost
+all of it redundant: token 1's K/V vector never changes once computed.
+
+**The fix:** cache each layer's K and V tensors for every token the
+moment they're computed, and simply *append* to that cache as new tokens
+are generated. Each new decode step then only has to compute Q/K/V for
+the **one new token**, and attends against the cached K/V for everything
+before it:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              PREFILL (encode the prompt) vs. DECODE (generate)              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  PREFILL — one parallel pass over the whole known input                    │
+│  (prompt tokens +, for a VLM, image tokens from 3.4.1's projector)         │
+│                                                                             │
+│    tokens: [T1 T2 T3 T4 T5] ──▶ one forward pass, all positions at once    │
+│                                  ──▶ WRITES K/V for all 5 tokens to cache  │
+│                                                                             │
+│    Nothing to READ from yet (cache starts empty) — this step behaves       │
+│    exactly like an ENCODER: full self-attention over a fixed input,        │
+│    computed once, in parallel. Compute-bound, GPU-efficient.               │
+│                                                                             │
+│  DECODE — one sequential step per output token                             │
+│                                                                             │
+│    step 1: compute Q/K/V for T6 only ──▶ attend over CACHED K/V(T1..T5)    │
+│                                       ──▶ append T6's K/V to the cache     │
+│    step 2: compute Q/K/V for T7 only ──▶ attend over CACHED K/V(T1..T6)    │
+│                                       ──▶ append T7's K/V to the cache     │
+│    ...repeats once per output token...                                    │
+│                                                                             │
+│    Each step does O(1) new K/V projection work + reads a growing cache —  │
+│    memory-bandwidth-bound, not compute-bound. This is TPOT (3.4.4).       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Why encoding — and this repo's dual-encoder model — never needs one:**
+an encoder (BERT-style, or this repo's `VisionEncoder`/`TextEncoder` in
+`src/model.py`) computes attention over its *entire* input exactly once,
+in parallel, and returns an embedding. There is no second, third, or
+hundredth forward pass over that same growing sequence to avoid
+recomputation for — the one pass already *is* the full computation, at
+full GPU parallelism. A KV cache exists to avoid **repeating** work
+across many small sequential passes; a single-pass encoder has nothing
+to repeat. This is exactly why 3.2/3.3's deployment paths (a cloud
+endpoint or an ONNX/TensorRT engine that returns one embedding per call)
+never mention a KV cache, while every engine in 3.4.1 is built around
+one: **the deciding factor isn't "LLM vs. non-LLM," it's whether
+inference is one parallel pass (prefill/encoding) or many sequential
+passes over a growing sequence (decoding).**
+
+**Why the cache dominates memory, not just latency** — per-token cache
+size is `2 (K and V) × num_layers × num_kv_heads × head_dim × bytes_per_element`.
+For a 7B-class model (32 layers, 32 heads, head_dim 128, FP16):
+`2 × 32 × 32 × 128 × 2 bytes ≈ 0.5 MB per token`. At a 4K-token context
+and batch size 1 that's already ~2GB — before counting the model's own
+weights — which is why 3.4.4's "KV cache memory" metric, not model size,
+is what actually bounds how many concurrent requests a GPU can serve.
+
+#### 3.4.4 LLM/VLM Inference Metrics
 
 Traditional latency/throughput still apply, but generation adds metrics
 with no equivalent in single-forward-pass inference:
@@ -536,7 +756,7 @@ with no equivalent in single-forward-pass inference:
 | **Image token count (VLM)** | Patches/tokens an image consumes — competes with text for context budget | e.g. 576 tokens per image tile |
 | **Quality metrics** | Task accuracy, hallucination rate, groundedness (VLM) — still required, but tracked separately from system metrics | Task-specific |
 
-#### 3.4.3 Worked Example: Serving a Small VLM with vLLM
+#### 3.4.5 Worked Example: Serving a Small VLM with vLLM
 
 ```bash
 # Self-host a VLM behind vLLM's OpenAI-compatible API, with continuous
@@ -585,9 +805,9 @@ print(f"TTFT: {ttft:.0f}ms  TPOT: {tpot:.1f}ms/token  tokens: {tokens}")
 | 32 | 340ms | 55ms | 580 | approaching GPU memory limit — TPOT degrading |
 
 The TPOT degradation at concurrency 32 is the KV-cache-memory ceiling
-from 3.4.1 step 4 showing up directly — the same pattern as the SaaS
-autoscaling-lag spike in 3.2.3 and the on-device thermal-throttling
-pattern in 3.3.2: **you can't interpret the metric without the pipeline
+from 3.4.2 step 4 (and 3.4.3's cache-size formula) showing up directly —
+the same pattern as the SaaS autoscaling-lag spike in 3.2.5 and the
+on-device thermal-throttling pattern in 3.3.2: **you can't interpret the metric without the pipeline
 behind it.**
 
 ---
@@ -627,36 +847,49 @@ pipeline is what tells you *which* constraint to expect, and where.
 
 ## 4. Course Project: Instrument This Repo
 
-*Deliverable: deploy this repo's retrieval model as a cloud service, and*
-*export it toward an on-device path, producing real deployment-pipeline*
-*artifacts and metrics for each — connecting Section 3's two pipelines to*
-*real numbers on your own machine/project.*
+*Deliverable: deploy this repo's `FusionCLIPModel` retrieval model as a*
+*cloud service, and export it toward an on-device path, producing real*
+*deployment-pipeline artifacts and metrics for each. The code for both*
+*paths already exists in the repo (`src/service.py`, `deploy/`,*
+*`src/export_onnx.py`, `src/benchmark_onnx.py`) — this project runs and*
+*measures it, then extends it.*
 
 ```
 PROJECT STEPS
 ═══════════════════════════════════════════════════════════════
 
-1. SAAS PATH: BUILD + DEPLOY THE SERVICE
-   ├── Wrap src/infer.py's retrieval logic in a minimal FastAPI app
-   │   with a /health and /embed endpoint (model loaded once at startup)
-   ├── Write the Dockerfile from §3.2.3, build, and run it locally
-   ├── (Stretch) Deploy to Cloud Run following §3.2.3's commands
-   └── Load-test at 1x, 10x, 50x concurrency; record p50/p95/p99 and QPS
-       at each level — does latency degrade gracefully or fall off a cliff?
+0. TRAIN A CHECKPOINT (if you don't have one yet)
+   └── python -m src.train   -->   outputs/fusion_model.pt (see Section 3.2 intro)
 
-2. ON-DEVICE PATH: EXPORT + BENCHMARK
-   ├── Export the vision tower (VisionEncoder + ProjectionHead) to ONNX
-   │   following §3.3.3's export_onnx.py pattern
-   ├── Validate ONNX output matches PyTorch output (np.allclose)
-   ├── Benchmark ONNX Runtime CPU latency (batch=1) as your baseline
-   └── (Stretch) If you have access to an NVIDIA GPU, build a TensorRT
-       FP16 engine with trtexec and compare latency + size against ONNX
+1. SAAS PATH: RUN + DEPLOY THE SERVICE  (§3.2, code: src/service.py, deploy/)
+   ├── pip install -r requirements.txt -r requirements-deploy.txt
+   ├── uvicorn src.service:app --port 8080 ; curl /health and /embed_text
+   ├── (Stretch) bash deploy/deploy_cloud_run.sh to ship it to Cloud Run
+   └── Load-test at 1x, 10x, 50x concurrency (§3.2.5); record p50/p95/p99
+       and QPS at each level — does latency degrade gracefully or fall off
+       a cliff? At what concurrency does your --concurrency=40 setting
+       start to matter?
 
-3. WRITE IT UP
+2. ON-DEVICE PATH: EXPORT + BENCHMARK  (§3.3, code: src/export_onnx.py, src/benchmark_onnx.py)
+   ├── python -m src.export_onnx --tower both   (validates against PyTorch automatically)
+   ├── python -m src.benchmark_onnx --onnx outputs/onnx/vision_tower.onnx
+   └── (Stretch) If you have access to an NVIDIA GPU/Jetson, run
+       bash deploy/export_tensorrt.sh and compare latency + size against
+       the CPU/ONNX baseline
+
+3. LLM/VLM CONNECTION (discussion, no code required)  (§3.4)
+   └── This repo's dual encoder never needs a KV cache (§3.4.3) because
+       it's single-pass. Sketch (in your write-up, not code): if you
+       bolted a small text-decoder onto the VisionEncoder's patch tokens
+       to build a LLaVA-style captioning VLM, which of §3.4.1's serving
+       engines would you reach for, and why would a KV cache suddenly
+       matter for that model when it never did for the retrieval model?
+
+4. WRITE IT UP
    └── One page: your SaaS service's p50/p95/p99 at each concurrency
        level, your ONNX (and TensorRT, if attempted) latency/size numbers,
-       and which metric YOU would pick as this project's headline SLO for
-       each deployment target, and why
+       your answer to step 3, and which metric YOU would pick as this
+       project's headline SLO for each deployment target, and why
 ```
 
 ---
@@ -773,6 +1006,10 @@ RESOURCES:
 │    tokens; metrics center on TTFT, TPOT, tokens/sec, and cost per 1M      │
 │    tokens — with a separate vision-encode cost for VLMs                   │
 │                                                                             │
+│  ✓ The KV cache exists because decoding makes many sequential passes      │
+│    over a growing sequence; a single-pass encoder (this repo's dual       │
+│    encoder included) never repeats that work, so it never needs one       │
+│                                                                             │
 │  ✓ Always report latency (and TPOT) as a distribution, never a single     │
 │    average — the tail is what breaks SLAs and user trust                  │
 │                                                                             │
@@ -798,5 +1035,5 @@ RESOURCES:
 
 *This document was created for educational purposes. Feel free to share and adapt with attribution.*
 
-**Last Updated**: 2026-09-17
-**Version**: 2.0
+**Last Updated**: 2026-09-20
+**Version**: 3.0

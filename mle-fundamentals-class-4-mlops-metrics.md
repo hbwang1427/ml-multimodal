@@ -290,9 +290,40 @@ a pipeline with distinct build-time and run-time stages:
 **Why the pipeline matters before the metrics:** p99 latency measured on
 a single always-warm replica means nothing once real traffic hits
 autoscaled, cold-starting, canary-split infrastructure. The metrics in
-3.2.4 are only meaningful in the context of *this* pipeline.
+3.2.5 are only meaningful in the context of *this* pipeline.
 
-#### 3.2.2 From `FusionCLIPModel` to a Deployable Service
+#### 3.2.2 REST APIs & FastAPI, Briefly
+
+`/health`, `/embed_text`, `/embed_image` are a **REST API** — an
+architectural style, not a piece of software. REST conventions:
+
+| REST principle | What it means in practice |
+|---|---|
+| Resources are URLs | A "thing" (an embedding) is addressed by a path, e.g. `/embed_text` |
+| HTTP verbs = actions | `GET` reads, `POST` creates/computes — the verb, not the URL, says what's happening |
+| Stateless requests | Every request carries everything the server needs; the server doesn't remember state between calls — this is exactly why the model is loaded once at startup as shared infrastructure, not as "session state" |
+| Status codes convey outcome | `200` OK, `400` bad input, `500` server error — a client reacts programmatically, no prose parsing |
+
+**FastAPI** is the Python *framework* that implements that contract for
+`src/service.py`:
+
+- `@app.get(...)` / `@app.post(...)` decorators map a path+verb to a
+  Python function — this is the routing mechanism from §3.2.1's diagram.
+- `EmbedTextRequest(BaseModel)` (a Pydantic model) gives free request
+  validation — malformed JSON gets rejected with `422` before your
+  function even runs.
+- It's async-native (built on Starlette/ASGI), so I/O like reading an
+  uploaded image doesn't block other in-flight requests — though the
+  model's `forward()` call itself is still synchronous, compute-bound
+  work (see the Dockerfile's single-worker note in §3.2.1).
+- It auto-generates interactive docs at `/docs` from your route
+  signatures — try `http://localhost:8080/docs` while the service runs.
+- **FastAPI defines *what* happens on a request; `uvicorn` is the actual
+  ASGI server that opens the socket on port 8080 and hands it requests.**
+  FastAPI alone can't listen on a port — that's `uvicorn`'s job, and why
+  every run command in this section starts with `uvicorn src.service:app`.
+
+#### 3.2.3 From `FusionCLIPModel` to a Deployable Service
 
 `src/infer.py` already does inference — but it loads the model, reads a
 manifest, and exits. A service has to load the model *once* and then
@@ -340,7 +371,7 @@ curl -X POST http://localhost:8080/embed_text \
   -H 'Content-Type: application/json' -d '{"text": "a red circle"}'
 ```
 
-#### 3.2.3 Deploying to GCP: Cloud Run, Step by Step
+#### 3.2.4 Deploying to GCP: Cloud Run, Step by Step
 
 `deploy/Dockerfile` and `deploy/deploy_cloud_run.sh` (new, in the repo)
 turn that local service into a GCP deployment, using the same GCS/DVC
@@ -362,7 +393,7 @@ A few decisions worth explaining, not just running:
 |---|---|
 | `dvc pull` before `docker build`, not `COPY outputs/` in the Dockerfile | Keeps the image reusable across model versions — retraining doesn't require a rebuild, only a redeploy pointing at a new checkpoint |
 | `--min-instances=1` | Avoids paying a cold-start penalty (model + HF backbone load) on the very first request of a demo or load test; drop to `0` for a genuinely low-traffic tenant to save cost |
-| `--concurrency=40` | Requests one Cloud Run instance handles in parallel. PyTorch inference holds the GIL during a forward pass, so this is tuned against measured p95/p99 (3.2.5), not guessed — too high queues requests behind a slow call, too low wastes instances |
+| `--concurrency=40` | Requests one Cloud Run instance handles in parallel. PyTorch inference holds the GIL during a forward pass, so this is tuned against measured p95/p99 (3.2.6), not guessed — too high queues requests behind a slow call, too low wastes instances |
 | Structured `latency_ms` field in every log line | Cloud Logging can turn a log field into a Cloud Monitoring metric directly — this is how the dashboards in step 7 actually get built, not a separate instrumentation system |
 | `gcloud builds submit` → Artifact Registry, tagged by commit SHA | Every deployed revision is traceable back to the exact code + model version that produced it — required for the canary rollback in step 8 |
 
@@ -372,7 +403,7 @@ Run it:
 REGION=us-central1 bash deploy/deploy_cloud_run.sh
 ```
 
-#### 3.2.4 SaaS Inference Metrics
+#### 3.2.5 SaaS Inference Metrics
 
 | Metric | What It Captures | Example SLO |
 |---|---|---|
@@ -386,7 +417,7 @@ REGION=us-central1 bash deploy/deploy_cloud_run.sh
 | **Availability (uptime)** | % of time the service met its SLA | 99.9% (≈43 min downtime/mo) |
 | **Noisy-neighbor isolation** | One tenant's burst doesn't degrade others' latency | Per-tenant rate limits enforced |
 
-#### 3.2.5 Worked Example: Load-Testing the Deployed Service
+#### 3.2.6 Worked Example: Load-Testing the Deployed Service
 
 With the service live at the URL `deploy/deploy_cloud_run.sh` printed,
 load-test `/embed_text` at increasing concurrency (see Section 4's
@@ -411,6 +442,68 @@ hey -z 60s -c 50 -m POST -H 'Content-Type: application/json' \
 The p99 spike between concurrency 10→50 is the autoscaling lag from
 3.2.1 step 6 showing up directly in the numbers — exactly why the
 pipeline has to be understood before the metric is interpreted.
+
+#### 3.2.7 Where Kubernetes (or Another Load Balancer) Fits In
+
+Everything above is **one container, one process, one port (8080)** —
+that's the whole service. Kubernetes (or a standalone load balancer)
+exists for the layer *above* that single process: getting traffic to the
+right one of *many running copies*, something Cloud Run already gave us
+for free in §3.2.4.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│         WHERE K8S / A LOAD BALANCER SITS RELATIVE TO src/service.py         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Clients (1000s)                                                          │
+│         │                                                                  │
+│         ▼                                                                  │
+│   ┌────────────────────────┐   ← the piece Cloud Run gave us for free;    │
+│   │  Load Balancer /        │     on GKE, YOU configure this               │
+│   │  Ingress / API Gateway  │     (picks WHICH replica gets each request,  │
+│   └───────────┬─────────────┘     round-robin / least-connections / etc.) │
+│               │                                                            │
+│      ┌────────┼────────┬─────────────┐                                    │
+│      ▼        ▼        ▼             ▼                                    │
+│   ┌──────┐ ┌──────┐ ┌──────┐     ┌──────┐  ← N identical copies of        │
+│   │ Pod 1│ │ Pod 2│ │ Pod 3│ ... │ Pod N│    THE EXACT container built     │
+│   │ :8080│ │ :8080│ │ :8080│     │ :8080│    from deploy/Dockerfile        │
+│   └──────┘ └──────┘ └──────┘     └──────┘                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cloud Run (§3.2.4) vs. Kubernetes (GKE) — same problem, different control:**
+
+| | Cloud Run | Kubernetes (GKE) |
+|---|---|---|
+| Load balancing | Built-in, fully managed — never configured directly | You deploy it yourself (a `Service` + `Ingress`, or a mesh like Istio) |
+| Scaling | `--min-instances`/`--max-instances`, autoscale on request concurrency | `HorizontalPodAutoscaler` — scale on CPU/GPU %, queue depth, or custom metrics |
+| Unit of scale | A "revision" | A `Pod`, grouped into a `Deployment` |
+| Reach for it when | A straightforward HTTP service is enough; no custom cross-request batching; zero infra to manage | You need request batching in front of the model, multiple GPUs shared across pods, precise canary/traffic-split control, or this service already lives alongside others on GKE |
+
+**What actually changes moving this service to GKE:**
+1. `deploy/Dockerfile` — **unchanged**. Same container either way.
+2. `gcloud run deploy` is replaced by a `Deployment` manifest (replica
+   count, resource requests/limits — where `--memory=2Gi --cpu=2` from
+   §3.2.4 becomes `resources.limits` in YAML) plus a `Service` exposing
+   it on a stable internal address.
+3. An `Ingress` (or a `LoadBalancer`-type `Service`) becomes the actual
+   load balancer from the diagram above — configured by you, not given.
+4. §3.2.1 step 8's canary rollout becomes Argo Rollouts or Istio traffic
+   splitting instead of Cloud Run's built-in revision percentages.
+5. `HorizontalPodAutoscaler` replaces `--min-instances`/`--max-instances`
+   — and can scale on GPU utilization directly, more precisely than
+   Cloud Run's autoscaler.
+
+**The metrics in §3.2.5 don't change** — p95/p99, QPS, concurrency
+headroom mean the same thing either way — but *where you'd go look at
+them* does: Cloud Run's dashboards come free via Cloud Monitoring; on
+GKE you'd typically wire up Prometheus + Grafana yourself, scraping each
+pod. **Rule of thumb:** stay on Cloud Run as long as "one container
+behind a managed load balancer" is enough; move to Kubernetes when you
+need something that abstraction doesn't expose.
 
 ---
 
@@ -806,7 +899,7 @@ print(f"TTFT: {ttft:.0f}ms  TPOT: {tpot:.1f}ms/token  tokens: {tokens}")
 
 The TPOT degradation at concurrency 32 is the KV-cache-memory ceiling
 from 3.4.2 step 4 (and 3.4.3's cache-size formula) showing up directly —
-the same pattern as the SaaS autoscaling-lag spike in 3.2.5 and the
+the same pattern as the SaaS autoscaling-lag spike in 3.2.6 and the
 on-device thermal-throttling pattern in 3.3.2: **you can't interpret the metric without the pipeline
 behind it.**
 
@@ -865,7 +958,7 @@ PROJECT STEPS
    ├── pip install -r requirements.txt -r requirements-deploy.txt
    ├── uvicorn src.service:app --port 8080 ; curl /health and /embed_text
    ├── (Stretch) bash deploy/deploy_cloud_run.sh to ship it to Cloud Run
-   └── Load-test at 1x, 10x, 50x concurrency (§3.2.5); record p50/p95/p99
+   └── Load-test at 1x, 10x, 50x concurrency (§3.2.6); record p50/p95/p99
        and QPS at each level — does latency degrade gracefully or fall off
        a cliff? At what concurrency does your --concurrency=40 setting
        start to matter?
@@ -1036,4 +1129,4 @@ RESOURCES:
 *This document was created for educational purposes. Feel free to share and adapt with attribution.*
 
 **Last Updated**: 2026-09-20
-**Version**: 3.0
+**Version**: 3.1
